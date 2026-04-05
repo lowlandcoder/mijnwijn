@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#2d0a1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>MijnWijn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0509;
+    --surface: #1a0b12;
+    --surface2: #261320;
+    --border: #3d1e2e;
+    --accent: #9b2d4a;
+    --accent2: #c4425f;
+    --gold: #c9a96e;
+    --text: #f0e6ea;
+    --text-muted: #8a6d78;
+    --wit: #4a90d9;
+    --rood: #c4425f;
+    --rose: #e8849a;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  
+  /* HEADER */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gold); letter-spacing: 0.5px; }
+  .logo span { font-style: italic; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .btn-icon { background: none; border: 1px solid var(--border); color: var(--text-muted); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all .15s; }
+  .btn-icon:hover, .btn-icon.active { border-color: var(--accent2); color: var(--accent2); background: rgba(196,66,95,.08); }
+
+  /* TABS */
+  .tabs { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; }
+  .tab { flex: 1; padding: 12px 8px; text-align: center; font-size: 12px; font-weight: 500; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; letter-spacing: 0.5px; text-transform: uppercase; }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* FILTERS */
+  .filter-section { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .filter-row { display: flex; gap: 6px; align-items: center; overflow-x: auto; scrollbar-width: none; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-muted); flex-shrink: 0; min-width: 34px; }
+  .filter-chip { flex-shrink: 0; padding: 4px 10px; border-radius: 16px; border: 1px solid var(--border); background: none; color: var(--text-muted); font-size: 11px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .15s; white-space: nowrap; }
+  .filter-chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  /* SEARCH */
+  .search-bar { padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .search-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px 8px 36px; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; }
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; }
+
+  /* SORT BAR */
+  .sort-bar { padding: 8px 16px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
+  .sort-bar select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 12px; padding: 4px 8px; border-radius: 6px; font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer; }
+  .count-badge { margin-left: auto; font-size: 11px; color: var(--text-muted); }
+
+  /* WINE LIST */
+  .wine-list { padding: 6px 10px 80px; }
+  .wine-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 4px; padding: 9px 10px; cursor: pointer; transition: all .15s; display: flex; gap: 10px; align-items: center; }
+  .wine-card:hover { border-color: var(--accent); background: var(--surface2); }
+  .wine-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-rood { background: var(--rood); }
+  .dot-wit { background: var(--wit); }
+  .dot-rose { background: var(--rose); }
+  .wine-info { flex: 1; min-width: 0; }
+  .wine-name { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wine-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; display: flex; gap: 6px; align-items: center; }
+  .wine-sub span { display: flex; align-items: center; gap: 2px; }
+  .wine-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+  .stars { color: var(--gold); font-size: 11px; letter-spacing: -1px; }
+  .stars.empty { color: var(--border); }
+  .wine-price { font-size: 10px; color: var(--text-muted); }
+  .wine-tag { font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 500; }
+  .tag-rood { background: rgba(196,66,95,.15); color: var(--rood); }
+  .tag-wit { background: rgba(74,144,217,.15); color: var(--wit); }
+  .tag-rose { background: rgba(232,132,154,.15); color: var(--rose); }
+
+  /* DETAIL MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; display: none; align-items: flex-end; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px 20px 40px; }
+  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; line-height: 1.3; flex: 1; padding-right: 12px; }
+  .modal-close { background: var(--surface2); border: none; color: var(--text-muted); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .modal-stars { font-size: 24px; color: var(--gold); margin-bottom: 12px; letter-spacing: 0; }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .modal-field { background: var(--surface2); border-radius: 8px; padding: 10px; }
+  .modal-field.full { grid-column: 1 / -1; }
+  .field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 4px; }
+  .field-value { font-size: 14px; color: var(--text); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .btn { padding: 10px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; border: none; font-weight: 500; flex: 1; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-danger { background: rgba(196,66,95,.15); color: var(--accent2); border: 1px solid rgba(196,66,95,.3); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+  /* ADD / EDIT FORM */
+  .form-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 300; display: none; align-items: flex-end; }
+  .form-overlay.open { display: flex; }
+  .form-sheet { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-height: 95vh; overflow-y: auto; padding: 20px 20px 40px; }
+  .form-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; margin-bottom: 16px; }
+  .form-row { margin-bottom: 14px; }
+  .form-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-muted); margin-bottom: 6px; display: block; }
+  .form-input, .form-select, .form-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent2); }
+  .form-textarea { resize: vertical; min-height: 70px; }
+  .form-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .star-picker { display: flex; gap: 4px; padding: 8px 0; }
+  .star-btn { font-size: 22px; cursor: pointer; color: var(--border); transition: color .1s; background: none; border: none; }
+  .star-btn.lit { color: var(--gold); }
+
+  /* FAB */
+  .fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; background: var(--accent); border-radius: 50%; border: none; color: white; font-size: 24px; cursor: pointer; box-shadow: 0 4px 20px rgba(155,45,74,.5); display: flex; align-items: center; justify-content: center; z-index: 150; transition: transform .15s; }
+  .fab:active { transform: scale(.93); }
+
+  /* STATS VIEW */
+  .stats-view { padding: 16px; display: none; }
+  .stats-view.active { display: block; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  .stat-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--gold); margin-bottom: 12px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-bar-wrap { flex: 1; margin: 0 10px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .stat-bar { height: 100%; border-radius: 2px; background: var(--accent); }
+  .big-number { font-size: 36px; font-family: 'Cormorant Garamond', serif; color: var(--gold); }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .stat-mini { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
+  .stat-mini .big-number { font-size: 28px; }
+  .stat-mini-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* GDRIVE */
+  .gdrive-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 16px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+  .gdrive-status { width: 6px; height: 6px; border-radius: 50%; background: #4caf50; }
+  .gdrive-status.syncing { background: var(--gold); animation: pulse 1s infinite; }
+  .gdrive-status.error { background: var(--accent2); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--surface2); border: 1px solid var(--border); padding: 10px 18px; border-radius: 8px; font-size: 13px; z-index: 500; display: none; white-space: nowrap; }
+  .toast.show { display: block; animation: fadeInOut 2.5s forwards; }
+  @keyframes fadeInOut { 0%{opacity:0;transform:translateX(-50%) translateY(4px)} 15%{opacity:1;transform:translateX(-50%) translateY(0)} 80%{opacity:1} 100%{opacity:0} }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* LIST VIEW */
+  .list-view { display: block; }
+  .list-view.hidden { display: none; }
+
+  @media(min-width: 600px){
+    .wine-list { max-width: 680px; margin: 0 auto; }
+    .stats-view { max-width: 680px; margin: 0 auto; }
+    .modal, .form-sheet { max-width: 600px; margin: 0 auto; border-radius: 20px; }
+    .modal-overlay, .form-overlay { align-items: center; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Mijn<span>Wijn</span></div>
+  <div class="header-actions">
+    <button class="btn-icon" id="syncBtn" title="Synchroniseer met Google Drive" onclick="syncDrive()">☁</button>
+    <button class="btn-icon" id="exportBtn" title="Exporteer CSV" onclick="exportCSV()">↓</button>
+  </div>
+</div>
+
+<div class="gdrive-bar">
+  <div class="gdrive-status" id="driveStatus"></div>
+  <span id="driveLabel">Google Drive niet verbonden</span>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('list')">Collectie</div>
+  <div class="tab" onclick="switchTab('stats')">Statistieken</div>
+</div>
+
+<div id="listView" class="list-view">
+  <div class="filter-section">
+    <div class="filter-row">
+      <span class="filter-label">Soort</span>
+      <button class="filter-chip active" data-group="soort" data-val="all" onclick="setFilterGroup('soort','all',this)">Alles</button>
+      <button class="filter-chip" data-group="soort" data-val="Rood" onclick="setFilterGroup('soort','Rood',this)">🍷 Rood</button>
+      <button class="filter-chip" data-group="soort" data-val="Wit" onclick="setFilterGroup('soort','Wit',this)">🥂 Wit</button>
+      <button class="filter-chip" data-group="soort" data-val="Rose" onclick="setFilterGroup('soort','Rose',this)">🌸 Rosé</button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Score</span>
+      <button class="filter-chip active" data-group="score" data-val="all" onclick="setFilterGroup('score','all',this)">Alle</button>
+      <button class="filter-chip" data-group="score" data-val="5" onclick="setFilterGroup('score','5',this)">★★★★★</button>
+      <button class="filter-chip" data-group="score" data-val="4+" onclick="setFilterGroup('score','4+',this)">★★★★+</button>
+      <button class="filter-chip" data-group="score" data-val="3+" onclick="setFilterGroup('score','3+',this)">★★★+</button>
+      <button class="filter-chip" data-group="score" data-val="1" onclick="setFilterGroup('score','1',this)">★</button>
+      <button class="filter-chip" data-group="score" data-val="0" onclick="setFilterGroup('score','0',this)">Niet gescoord</button>
+    </div>
+  </div>
+  <div class="search-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" type="search" id="searchInput" placeholder="Zoek op naam, producent, druif…" oninput="renderList()">
+    </div>
+  </div>
+  <div class="sort-bar">
+    <span>Sorteer:</span>
+    <select onchange="renderList()" id="sortSelect">
+      <option value="datum_desc">Datum (nieuw→oud)</option>
+      <option value="datum_asc">Datum (oud→nieuw)</option>
+      <option value="score_desc">Score (hoog→laag)</option>
+      <option value="score_asc">Score (laag→hoog)</option>
+      <option value="naam">Naam A→Z</option>
+      <option value="prijs_asc">Prijs (laag→hoog)</option>
+    </select>
+    <span class="count-badge" id="countBadge">0 wijnen</span>
+  </div>
+  <div class="wine-list" id="wineList"></div>
+</div>
+
+<div class="stats-view" id="statsView">
+  <div class="stat-grid">
+    <div class="stat-mini"><div class="big-number" id="s-total">0</div><div class="stat-mini-label">Wijnen</div></div>
+    <div class="stat-mini"><div class="big-number" id="s-avg">—</div><div class="stat-mini-label">Gem. score</div></div>
+    <div class="stat-mini"><div class="big-number" id="s-5star">0</div><div class="stat-mini-label">5-sterren</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">Top landen</div>
+    <div id="s-landen"></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">Soort verdeling</div>
+    <div id="s-soort"></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">Top winkels</div>
+    <div id="s-winkels"></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">Beste wijnen (★★★★★)</div>
+    <div id="s-topwijnen"></div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal" onclick="closeDetail(event)">
+  <div class="modal" id="modalContent">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="m-naam"></div>
+      <button class="modal-close" onclick="closeDetailBtn()">✕</button>
+    </div>
+    <div class="modal-stars" id="m-stars"></div>
+    <div class="modal-grid">
+      <div class="modal-field"><div class="field-label">Producent</div><div class="field-value" id="m-producent"></div></div>
+      <div class="modal-field"><div class="field-label">Soort</div><div class="field-value" id="m-soort"></div></div>
+      <div class="modal-field"><div class="field-label">Land</div><div class="field-value" id="m-land"></div></div>
+      <div class="modal-field"><div class="field-label">Jaar</div><div class="field-value" id="m-jaar"></div></div>
+      <div class="modal-field"><div class="field-label">Regio</div><div class="field-value" id="m-regio"></div></div>
+      <div class="modal-field"><div class="field-label">Druif</div><div class="field-value" id="m-druif"></div></div>
+      <div class="modal-field"><div class="field-label">Winkel</div><div class="field-value" id="m-winkel"></div></div>
+      <div class="modal-field"><div class="field-label">Datum / Prijs</div><div class="field-value" id="m-datum"></div></div>
+      <div class="modal-field full" id="m-opmerking-wrap"><div class="field-label">Opmerkingen</div><div class="field-value" id="m-opmerking"></div></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="editWijn()">✏ Bewerken</button>
+      <button class="btn btn-danger" onclick="deleteWijn()">🗑 Verwijder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Form -->
+<div class="form-overlay" id="formOverlay" onclick="closeFormOverlay(event)">
+  <div class="form-sheet" id="formSheet">
+    <div class="modal-handle"></div>
+    <div class="form-title" id="formTitle">Wijn toevoegen</div>
+    <input type="hidden" id="f-id">
+    <div class="form-row">
+      <label class="form-label">Wijnnaam *</label>
+      <input class="form-input" id="f-naam" placeholder="b.v. 2022 - Dievole Chianti Classico">
+    </div>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">Producent</label>
+        <input class="form-input" id="f-producent" placeholder="Producent">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Jaar</label>
+        <input class="form-input" id="f-jaar" type="number" placeholder="2022">
+      </div>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">Soort</label>
+        <select class="form-select" id="f-soort">
+          <option value="Rood">Rood</option>
+          <option value="Wit">Wit</option>
+          <option value="Rose">Rosé</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Land</label>
+        <select class="form-select" id="f-land">
+          <option value="">— kies —</option>
+          <option>Italie</option><option>Frankrijk</option><option>Spanje</option>
+          <option>Portugal</option><option>Argentinie</option><option>Chili</option>
+          <option>Zuid Afrika</option><option>Nw Zeeland</option><option>Australie</option>
+          <option>Oostenrijk</option><option>Duitsland</option><option>Amerika</option>
+          <option>Anders</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">Regio</label>
+        <input class="form-input" id="f-regio" placeholder="b.v. Toscane">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Subregio</label>
+        <input class="form-input" id="f-subregio" placeholder="b.v. Chianti Classico">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Druif(soort)</label>
+      <input class="form-input" id="f-druif" placeholder="b.v. Sangiovese">
+    </div>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">Winkel</label>
+        <input class="form-input" id="f-winkel" placeholder="b.v. Henri Bloem">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Prijs (€)</label>
+        <input class="form-input" id="f-prijs" type="number" step="0.01" placeholder="12.50">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Aankoopdatum</label>
+      <input class="form-input" id="f-datum" type="date">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Score</label>
+      <div class="star-picker" id="starPicker">
+        <button class="star-btn" onclick="setStar(0)">☆</button>
+        <button class="star-btn" onclick="setStar(1)">★</button>
+        <button class="star-btn" onclick="setStar(2)">★</button>
+        <button class="star-btn" onclick="setStar(3)">★</button>
+        <button class="star-btn" onclick="setStar(4)">★</button>
+        <button class="star-btn" onclick="setStar(5)">★</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Opmerkingen</label>
+      <textarea class="form-textarea" id="f-opmerking" placeholder="Proefnotities, gelegenheid, combinaties…"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-secondary" onclick="closeForm()">Annuleer</button>
+      <button class="btn btn-primary" onclick="saveWijn()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<button class="fab" onclick="openAddForm()">＋</button>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const INITIAL_DATA = [{"id":"1","naam":"Ocone - Bozzovich Nero","producent":"Ocone","soort":"Rood","land":"Italie","regio":"Zuid Italie ","subregio":"Campania","druif":"Aglianico / Piedirosso","jaar":null,"winkel":"Texel - worsteltent","datum":"2023-07-21","prijs":null,"score":3,"opmerkingen":"niet te zwoel, mooi zwarte kers, braam niet te zoet, mooi droog en ron"},{"id":"2","naam":"2019 - Kaiken, Estate Cabernet Sauvignon","producent":"Kaiken","soort":"Rood","land":"Argentinie","regio":"Mendoza","subregio":"Lujan de Cuyo","druif":"Cabernet Sauvignon","jaar":2019,"winkel":"????","datum":"","prijs":null,"score":3,"opmerkingen":"gedronken bij Vreeburg met Arjen en Nancy, lekkere wijn"},{"id":"3","naam":"2019 - Argiano - Rosso di Montalcino","producent":"Argiano","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Rosso di Montalcino","druif":"Sangiovese","jaar":2019,"winkel":"Henri Bloem","datum":"2022-11-25","prijs":16.5,"score":0,"opmerkingen":"Licht, hout, geen wijn om zo ff glas te drinken"},{"id":"4","naam":"2021 - Saint Louis de Provence, coteaux varois en provence, estandon","producent":"Estadon","soort":"Rose","land":"Frankrijk","regio":"Provence","subregio":"Coteaux varois en provence","druif":"Cinsault, Grenache , Syrah (Shiraz)","jaar":2021,"winkel":"AH","datum":"","prijs":6.0,"score":2,"opmerkingen":"goede PK, niet al te fruitig, beetje kruiden"},{"id":"5","naam":"2024 - Flexbourne - sauvignon blanc- marlborough","producent":"Flaxbourne","soort":"Wit","land":"Nw Zeeland","regio":"","subregio":"","druif":"","jaar":2024,"winkel":"Albert Heijn","datum":"2025-11-12","prijs":8.99,"score":3,"opmerkingen":"Prima sb, fijne neus"},{"id":"6","naam":"2021 - Domaine de l'Arjolle Côtes de Thongue Equinoxe Cabernet-Syrah","producent":"Domaine de l'Arjolle","soort":"Rood","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Cotes de Thongue","druif":"Cabernet / Syrah(Shiraz)","jaar":2021,"winkel":"Bacchus","datum":"2023-10-12","prijs":null,"score":0,"opmerkingen":""},{"id":"7","naam":"2022 - Vigna rocca - albana secco - tre monti","producent":"Tre Monti","soort":"Wit","land":"Italie","regio":"Emilia-Romagna","subregio":"","druif":"Albana","jaar":2022,"winkel":"Wijnpand","datum":"2023-06-30","prijs":null,"score":3,"opmerkingen":"Orange wijn > tussen fris wit en rose, fijne smaak!! voor herhaling vatb"},{"id":"8","naam":"2019 - Domaine de l'Arjolle Fume Rouge Cabernet Franc","producent":"Domaine de l'Arjolle","soort":"Rood","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Cotes de Thongue","druif":"Cabernet Franc","jaar":2019,"winkel":"Bacchus","datum":"","prijs":null,"score":1,"opmerkingen":"Medium body, droog , lichte houttonen, kersen met een klein zuurtje > Peter wijn"},{"id":"9","naam":"2020 - Domaine de l'Arjolle Côtes de Thongue Equinoxe Cabernet-Syrah","producent":"Domaine de l'Arjolle","soort":"Rood","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Cotes de Thongue","druif":"Cabernet / Syrah(Shiraz)","jaar":2020,"winkel":"Bacchus","datum":"","prijs":14.0,"score":4,"opmerkingen":"Medium > vol, soepel, ,diep rood, zwart fruit, braam, kers, krachtig, lekker"},{"id":"10","naam":"2023 - Volé Barbera - Appassimento","producent":"Cascina Radice","soort":"Rood","land":"Italie","regio":"Noord Italie","subregio":"Piemonte","druif":"Barbera","jaar":2023,"winkel":"Wijnpand","datum":"2026-02-01","prijs":null,"score":2,"opmerkingen":"twijfel, wat tanines, droog, moet je zeker decanteren, na een dag veel lekkerder!"},{"id":"11","naam":"2021 - Domaine de Marce - Touraine Oisly - Coulee Galante 2021","producent":"Domaine de Marce","soort":"Wit","land":"Frankrijk","regio":"Loire Valley / Middle Loire","subregio":"Touraine","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Bacchus","datum":"2022-11-05","prijs":11.65,"score":0,"opmerkingen":""},{"id":"12","naam":"2019 - Tenuta Il Falchetto - Lurei - Barbera d'Asti - DOCG - Superiore","producent":"Il Falchetto","soort":"Rood","land":"Italie","regio":"Noord Italie - Piemonte","subregio":"Asti","druif":"Barbera","jaar":2019,"winkel":"Henri Bloem","datum":"2022-09-16","prijs":10.95,"score":1,"opmerkingen":"droog, lichte kleur, rood fruit, light/medium body, niet mijn ding"},{"id":"13","naam":"2021 - Herdade de Sao Miguel - Colheita Seleccionada - alentejano","producent":"Herdade de São Miguel","soort":"Rood","land":"Portugal","regio":"Zuid Portugal","subregio":"Alentejano","druif":"Alicante Bouschet, touriga nacional, syrah, cabenet sauvignon","jaar":2021,"winkel":"Bacchus","datum":"2023-03-18","prijs":9.5,"score":0,"opmerkingen":""},{"id":"14","naam":"2021 - Lavis Classic Sauvignon Blanc","producent":"Cantina La Vis","soort":"Wit","land":"Italie","regio":"Noord Italie","subregio":"Trentino","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Gall & Gall","datum":"","prijs":null,"score":2,"opmerkingen":"mooi ronde SB, niet echt stuivende neus"},{"id":"15","naam":"2022 - Tenuta Il Falchetto - Bricco Paradiso - Barbera d'Asti - DOCG - Superiore","producent":"Il Falchetto","soort":"Rood","land":"Italie","regio":"Noord Italie - Piemonte","subregio":"Asti","druif":"Barbera","jaar":2022,"winkel":"Henri Bloem","datum":"2025-01-10","prijs":17.95,"score":3,"opmerkingen":"zachte kruidig, medium body, niet al te krachtig, zwart fruit, mooi bij vlees"},{"id":"16","naam":"2022 - 1954 - Puglia - Primitivo - IGP","producent":"Cantine Paradiso","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"","druif":"Primitivo","jaar":2022,"winkel":"Wijnpand","datum":"2025-10-10","prijs":null,"score":3,"opmerkingen":"donker rijp fruit met wat tanines/ leer"},{"id":"17","naam":"2021 - Capala - Primitivo","producent":"Capala","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"","druif":"Primitivo","jaar":2021,"winkel":"Deka","datum":"2023-03-27","prijs":4.75,"score":1,"opmerkingen":"voor dit geld, slobber, weinig diepgang, beetje jam/rood fruit"},{"id":"18","naam":"2020 - Chianti Classico - Casa Emma","producent":"Casa Emma","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Chianti Classico","druif":"Sangiovese","jaar":2020,"winkel":"Henri Bloem","datum":"2023-05-11","prijs":12.0,"score":3,"opmerkingen":"chianti, pepertje, mooie tanine, kers, medium body, geen zwoel rijp fruit"},{"id":"19","naam":"2020 - Luca Old Vine Marlbec","producent":"Luca","soort":"Rood","land":"Argentinie","regio":"Mendoza","subregio":"","druif":"Malbec","jaar":2020,"winkel":"De Flessenzaak","datum":"2024-04-01","prijs":27.0,"score":4,"opmerkingen":"Mooie zwoele ronde Malbec, aanrader"},{"id":"20","naam":"Gran Marius - Verdejo Barrica - Finca los Timonares - Amansa","producent":"Finca los timonares","soort":"Wit","land":"Spanje","regio":"Castilla","subregio":"Almansa","druif":"Verdejo","jaar":null,"winkel":"deflessenzaak.nl","datum":"2023-03-25","prijs":null,"score":1,"opmerkingen":"boter? eiken? apple? (van Paul en Sandra)"},{"id":"21","naam":"2018 - Marius - Reserva - Finca los Timonares - Amansa DOC","producent":"Finca los timonares","soort":"Rood","land":"Spanje","regio":"Castilla","subregio":"Almansa","druif":"Cabernet Sauvignon, Cabernet Franc, Merlot","jaar":2018,"winkel":"deflessenzaak.nl","datum":"2023-03-25","prijs":null,"score":3,"opmerkingen":"vanile, klein houtje, kersen, medium/zwaar (van Paul en Sandra)"},{"id":"22","naam":"2020 - Chianti Classico - Casa Emma","producent":"Casa Emma","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Chianti Classico","druif":"Sangiovese, canaiolo, black malvasia","jaar":2020,"winkel":"Henri Bloem","datum":"2024-03-22","prijs":14.95,"score":4,"opmerkingen":"Gracieuze fijne rode wijn met klassiek waarden. Matig intense kersenkleur met fijne tranen; minerale neus met gestoofde vruchten en specerijen, aardse accenten, zuivere smaakaanzet met mineralen, evenwichtig met slanke tannines"},{"id":"23","naam":"2022 - Tenuta Il Falchetto - Bricco Paradiso - Barbera d'Asti - DOCG - Superiore","producent":"Il Falchetto","soort":"Rood","land":"Italie","regio":"Noord Italie - Piemonte","subregio":"Asti","druif":"Barbera","jaar":2022,"winkel":"Henri Bloem","datum":"2025-01-25","prijs":17.95,"score":3,"opmerkingen":""},{"id":"24","naam":"2021 - Alamos - Malbec","producent":"Alamos","soort":"Rood","land":"Argentinie","regio":"Mendoza","subregio":"","druif":"Malbec","jaar":2021,"winkel":"Gall & Gall","datum":"","prijs":null,"score":1,"opmerkingen":"medium body, niet al te krachtig, zwart fruit"},{"id":"25","naam":"2024 - Marziano Abbona - Casaret - Langhe DOC - Barbera","producent":"Marziano Abbona","soort":"Rood","land":"Italie","regio":"Noord Italie","subregio":"Piemonte","druif":"Barbera","jaar":2024,"winkel":"Wijnpand","datum":"2025-10-10","prijs":15.0,"score":3,"opmerkingen":"iets koelen, medium body, aardbei, rood fruit, zachte tanine"},{"id":"26","naam":"2019 - Tenuta Olim Bauda - Barbera d'Asti - Le Rocchette","producent":"Tenuta Olim Bauda","soort":"Rood","land":"Italie","regio":"Noord Italie - Piemonte","subregio":"Asti","druif":"Barbera","jaar":2019,"winkel":"Bacchus","datum":"2023-10-12","prijs":18.95,"score":3,"opmerkingen":"Mooie wijn, met klein beetje hout, lekker voor bij het eten!"},{"id":"27","naam":"Clearwater Cove - Marlborough - Sauvignon Blanc - 2021","producent":"Clearwater Cove","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Gall & Gall","datum":"2022-09-16","prijs":10.65,"score":2,"opmerkingen":"peer, citrus, prima SB"},{"id":"28","naam":"2021 - Tenuta Olim Bauda - Barbera d'Asti - La Villa","producent":"Tenuta Olim Bauda","soort":"Rood","land":"Italie","regio":"Noord Italie - Piemonte","subregio":"Asti","druif":"Barbera","jaar":2021,"winkel":"Bacchus","datum":"2023-10-12","prijs":13.5,"score":3,"opmerkingen":"medium/light body, fijn met klein kersje / houtje, lekker"},{"id":"29","naam":"J. de Villebois - Sauvignon Blanc - val de loire","producent":"J. de Villebois","soort":"Wit","land":"Frankrijk","regio":"Val de Loire","subregio":"","druif":"Sauvignon Blanc","jaar":null,"winkel":"Gall & Gall","datum":"","prijs":9.29,"score":2,"opmerkingen":"Lekker, peer appel, Citroën, mooi droog."},{"id":"30","naam":"2018 - Langhe rosso - Le Cecche","producent":"Le Cecche","soort":"Rood","land":"Italie","regio":"Noord Italie - Piemonte","subregio":"Piemonte (Langhe)","druif":"blend noord italie","jaar":2018,"winkel":"Henri Bloem","datum":"2024-02-10","prijs":9.95,"score":2,"opmerkingen":"rond (niet zwoel) , medium body, droog (weinig zoet), hout/ rijpe taninne"},{"id":"31","naam":"2021 - Lawson's dry hills - reserve - sauvignon blanc","producent":"Lawson's Dry Hills","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Gall & Gall","datum":"","prijs":null,"score":1,"opmerkingen":"Droog, net teveel citrus"},{"id":"32","naam":"2021 - Mount Vernon - sauvignon blanc ","producent":"Mount Vernon","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Gall & Gall","datum":"","prijs":null,"score":2,"opmerkingen":"medium body, heerlijk tropisch fruit in de neus, droog"},{"id":"33","naam":"2022 - Mount Vernon - sauvignon blanc","producent":"Mount Vernon","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2022,"winkel":"Gall & Gall","datum":"","prijs":10.65,"score":1,"opmerkingen":"prima, wat korte droge afdronk, yealands is fruitiger"},{"id":"34","naam":"2021 - Mulderbosch - Sauvignon Blanc ","producent":"Mulderbosch","soort":"Wit","land":"Zuid Afrika","regio":"West kaap / kuststreek","subregio":"Stellenbosch","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Gall & Gall","datum":"","prijs":9.29,"score":2,"opmerkingen":"lekker, minder fruitige neus, droog, beetje hout, wat meer groen fruit"},{"id":"35","naam":"2020 - Diano d'Alba - Le Cecche","producent":"Le Cecche","soort":"Rood","land":"Italie","regio":"Noord Italie - Piemonte","subregio":"Piemonte (diano d'Alba)","druif":"blend noord italie - dolcetto","jaar":2020,"winkel":"Henri Bloem","datum":"2024-03-22","prijs":10.95,"score":4,"opmerkingen":"Donkerrode fruitige wijn met veel karakter, dolcetto geeft fruit / kers met een peper, lekker bij stuk worst of kruidig vlees gerecht"},{"id":"36","naam":"2020 - Diano d'Alba - Le Cecche","producent":"Le Cecche","soort":"Rood","land":"Italie","regio":"Noord Italie - Piemonte","subregio":"Piemonte (diano d'Alba)","druif":"blend noord italie - dolcetto","jaar":2020,"winkel":"Henri Bloem","datum":"2025-01-25","prijs":10.95,"score":2,"opmerkingen":""},{"id":"37","naam":"Viña la rosa - la palma - Chardonnay","producent":"Viña la Rosa","soort":"Wit","land":"Chili","regio":"","subregio":"","druif":"Chardonnay","jaar":null,"winkel":"Gall & Gall","datum":"2023-03-09","prijs":null,"score":1,"opmerkingen":"Geen fijne afdronk"},{"id":"38","naam":"2021 -Whale's Tale - Marlborough - Sauvignon Blanc - 2021","producent":"Whale's tale","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Gall & Gall","datum":"2022-09-16","prijs":7.99,"score":2,"opmerkingen":"prima SB maar niet echt bijzonder."},{"id":"39","naam":"2021 - Wolf Blass - House of the dragon - fire & blood","producent":"Wolf Blass","soort":"Rood","land":"Australie","regio":"Zuid Australie","subregio":"Barossa","druif":"Cabernet Sauvignon / Shiraz","jaar":2021,"winkel":"Gall & Gall","datum":"2022-12-05","prijs":14.95,"score":2,"opmerkingen":"nog meer Peter wijn, vol, droog, niet te jammy/zach , zwart fruit, iets hout/vanille, super!"},{"id":"40","naam":"Yealands - Marlborough - Sauvignon Blanc - 2022","producent":"Yealands","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2022,"winkel":"Gall & Gall","datum":"2022-09-16","prijs":9.98,"score":3,"opmerkingen":"prima PK verhouding, fruitig, droog, peer, lemon, tropisch fruit, fijne neus, "},{"id":"41","naam":"Yealands - Reserve - Marlborough - Sauvignon Blanc - 2021","producent":"Yealands","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Gall & Gall","datum":"2022-09-16","prijs":11.29,"score":1,"opmerkingen":"Droog, net teveel citrus"},{"id":"42","naam":"Yealands - Marlborough - Sauvignon Blanc - 2022","producent":"Yealands","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2022,"winkel":"Gall & Gall","datum":"2024-02-16","prijs":10.98,"score":3,"opmerkingen":"zeker voor herhaling, stuivend fruit, droog, friszoet, lekker!!"},{"id":"43","naam":"2018 - Argiano - NC (Non Confunditur) Toscana","producent":"Argiano","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Montalcino","druif":"Cabernet Sauvignon","jaar":2018,"winkel":"Henri Bloem","datum":"","prijs":null,"score":0,"opmerkingen":"??"},{"id":"44","naam":"2019 - Terre di San Leonardo Tenuta San Leonardo","producent":"Tenuta San Leonardo","soort":"Rood","land":"Italie","regio":"Noord Italie","subregio":"Trentino","druif":"Cabernet Sauvignon, Cabernet Franc, Merlot","jaar":2019,"winkel":"Henri Bloem","datum":"2024-03-22","prijs":12.95,"score":0,"opmerkingen":"Bordeaux blend uit Italie"},{"id":"45","naam":"2021 - Domaine de Bellevue Sauvignon","producent":"Raphael Midoir","soort":"Wit","land":"Frankrijk","regio":"","subregio":"Touraine","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Grapedistrict","datum":"","prijs":null,"score":2,"opmerkingen":"Stuivend in de neus, perzik, peer, citroen. Beetje vettig/vol in de mond"},{"id":"46","naam":"2019 - McManis - Pinot Noir - Lodi Ava - California -2019","producent":"McManis","soort":"Rood","land":"Amerika","regio":"California (central valley)","subregio":"Lodi","druif":"Pinot Noir","jaar":2019,"winkel":"Hans Molenaar","datum":"2023-10-01","prijs":null,"score":3,"opmerkingen":"via ruud en christel, zeker voor herhaling vatbaar, niet te zoet, mooi kersen"},{"id":"47","naam":"2019 - Dievole dal 1090 - Chianti Classico","producent":"Dievole","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Chianti","druif":"Sangiovese","jaar":2019,"winkel":"Henri Bloem","datum":"2023-05-11","prijs":16.0,"score":4,"opmerkingen":"light/medium, leer, vanille, kers, fluweelzacht, mooie chianti!"},{"id":"48","naam":"2020 - Dievole dal 1090 - Chianti Classico","producent":"Dievole","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Chianti","druif":"Sangiovese","jaar":2020,"winkel":"Henri Bloem","datum":"2023-12-16","prijs":13.95,"score":1,"opmerkingen":"ander jaar? Niet echt fruitig, nog teveel tannines"},{"id":"49","naam":"2019 - Artezin - Mendocino - The Hess Collection","producent":"Artezin","soort":"Rood","land":"Amerika","regio":"California (north coast)","subregio":"Medocino county","druif":"Zinfandel","jaar":2019,"winkel":"Henri Bloem","datum":"2022-11-25","prijs":19.95,"score":3,"opmerkingen":"lekker maar PK waarde niet in verhouding"},{"id":"50","naam":"2022 - Sliding hill - marlborough - sauvignon blanc","producent":"Auntsfield Estate","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough / Wairau Valley","druif":"Sauvignon Blanc","jaar":2022,"winkel":"Henri Bloem","datum":"2023-07-28","prijs":null,"score":3,"opmerkingen":"Lekkere sb, mooie geur, mediume body, niet te droog"},{"id":"51","naam":"2023 - Sliding hill - marlborough - sauvignon blanc","producent":"Auntsfield Estate","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough / Wairau Valley","druif":"Sauvignon Blanc","jaar":2023,"winkel":"Henri Bloem","datum":"2024-04-26","prijs":9.95,"score":4,"opmerkingen":"SB neus, Sas vind deze lekker, ik vind m iets te droog"},{"id":"52","naam":"2023 - Auntsfield Single vineyard Sauvignon","producent":"Auntsfield Estate","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough / Wairau Valley","druif":"Sauvignon Blanc","jaar":2023,"winkel":"Henri Bloem","datum":"2024-07-06","prijs":11.5,"score":4,"opmerkingen":"Lekkeren SB, stuivend, tropisch, heerlijk"},{"id":"53","naam":"2021 - Auntsfield - Single vineyard - Pinot Noir","producent":"Auntsfield Estate","soort":"Rood","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough / Wairau Valley","druif":"Pinot Noir","jaar":2021,"winkel":"Henri Bloem","datum":"2025-01-22","prijs":13.95,"score":2,"opmerkingen":"rood fruit, bramen, frambozen met gedroogde kruiden"},{"id":"54","naam":"2022 - Leenders - De Saffraan Syrah - Bezuidenhout family wines","producent":"Bezuidenhout Family","soort":"Rood","land":"Zuid Afrika","regio":"","subregio":"","druif":"Syrah(Shiraz)","jaar":2022,"winkel":"Henri Bloem","datum":"2024-02-10","prijs":8.95,"score":2,"opmerkingen":"medium syrah, niet heel zwaar, wat rood fruit, p"},{"id":"55","naam":"2023 - Leenders - De Saffraan peer - chenin blanc - Bezuidenhout family wines","producent":"Bezuidenhout Family","soort":"Wit","land":"Zuid Afrika","regio":"West kaap / kuststreek","subregio":"","druif":"Chenin Blanc","jaar":2023,"winkel":"Henri Bloem","datum":"2024-02-10","prijs":8.95,"score":2,"opmerkingen":" Wat voller, ronder da SB, beetje boter, tanine"},{"id":"56","naam":"2021 - Coto de Hayas - verdejo - campo de borja","producent":"Bodegas Aragonesas","soort":"Wit","land":"Spanje","regio":"Aragon","subregio":"Campo de Borja","druif":"Verdejo","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":0,"opmerkingen":"mmmaaww, geur mm, nasmaak mmah"},{"id":"57","naam":"2021 - Carchelo - Vinedos de pueblo - Jumilla - Monastrell","producent":"Bodegas Carchelo","soort":"Rood","land":"Spanje","regio":"Jumilla","subregio":"","druif":"Monastrell, Tempranillo en Cabernet Sauvignon","jaar":2021,"winkel":"Henri Bloem","datum":"2023-11-10","prijs":9.5,"score":0,"opmerkingen":""},{"id":"58","naam":"2018 - Brown Brothers - Milawa - Heathcote Shiraz 1889","producent":"Brown Brothers","soort":"Rood","land":"Australie","regio":"Victoria (central)","subregio":"Heathcote","druif":"Syrah(Shiraz)","jaar":2018,"winkel":"Henri Bloem","datum":"2022-11-25","prijs":10.95,"score":4,"opmerkingen":"medium > vol body, zwart fruit, klein houtje, niet te zoet, heerlijk!!!"},{"id":"59","naam":"2022 - Brown Brothers - The Windmill - Shiraz","producent":"Brown Brothers","soort":"Rood","land":"Australie","regio":"","subregio":"","druif":"Syrah(Shiraz)","jaar":2022,"winkel":"Henri Bloem","datum":"2026-01-03","prijs":7.95,"score":3,"opmerkingen":"medium body, kersen en kruidig, lekker"},{"id":"60","naam":"2020 - Brown Brothers - Wine makers series - Heathcote 2020 (batch 566) - Shiraz","producent":"Brown Brothers","soort":"Rood","land":"Australie","regio":"","subregio":"","druif":"Syrah(Shiraz)","jaar":2020,"winkel":"Henri Bloem","datum":"2026-01-03","prijs":14.95,"score":4,"opmerkingen":"medium body, kersen en kruidig, lekker, rjker en voller en ronder dan the windmill"},{"id":"61","naam":"2019 - Brown Brothers - Sauvignon Blanc - Tasmania 1889","producent":"Brown Brothers","soort":"Wit","land":"Australie","regio":"Tasmania","subregio":"","druif":"Sauvignon Blanc","jaar":2019,"winkel":"Henri Bloem","datum":"2023-07-28","prijs":10.95,"score":4,"opmerkingen":"iets minder droge SB, lekker fruit!"},{"id":"62","naam":"2020 - Brown Brothers - Sauvignon Blanc - Tasmania 1889","producent":"Brown Brothers","soort":"Wit","land":"Australie","regio":"Tasmania","subregio":"","druif":"Sauvignon Blanc","jaar":2020,"winkel":"Henri Bloem","datum":"2024-06-07","prijs":10.95,"score":0,"opmerkingen":"ander jaar"},{"id":"63","naam":"2019 - Enrico Santini bio - Poggio al Moro","producent":"Enrico Santini","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Bolgheri","druif":"Sangiovese, cabernet sauvignon, syrah, merlot","jaar":2019,"winkel":"Henri Bloem","datum":"2025-12-05","prijs":18.5,"score":5,"opmerkingen":"donkere fruit, kers met mooie ronde tanine/houtje, blijft lang hangen, heerlijk!"},{"id":"64","naam":"2020 - Rosso - alto mincio - Gemei - Ottella","producent":"Ottella","soort":"Rood","land":"Italie","regio":"Noord Italie - Veneto","subregio":"Verona","druif":"Cabernet Sauvignon, Merlot, Corvina Veronese","jaar":2020,"winkel":"Henri Bloem","datum":"2022-11-25","prijs":10.95,"score":2,"opmerkingen":"licht/medium body, wat je jong, te fris"},{"id":"65","naam":"2023 - Falorini - Padre & Figlio - Governo all' uso Toscano IGT","producent":"Famiglia Falorni (Agricole Selvi)","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"","druif":"Sangiovese","jaar":2023,"winkel":"Wijnpand","datum":"2025-10-03","prijs":14.0,"score":4,"opmerkingen":"kers, rood fruit, soepel / zacht en rond"},{"id":"66","naam":"2022 - Primaura - rosso puglia - IGP - Cabernet Sauvignon, Primitivo, Syrah","producent":"Feudi Salentini","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"","druif":"Cabernet Sauvignon, Primitivo, Syrah","jaar":2022,"winkel":"Wijnpand","datum":"2026-02-01","prijs":null,"score":4,"opmerkingen":"Stevig, zacht, vol donker fruit, hout, chocola"},{"id":"67","naam":"2023 - Menetou Salon Blanc - Chateau de Maupas","producent":"Chateau de Maupas","soort":"Wit","land":"Frankrijk","regio":"Loire","subregio":"Menetou Salon","druif":"Sauvignon Blanc","jaar":2023,"winkel":"Henri Bloem","datum":"2024-09-06","prijs":12.95,"score":0,"opmerkingen":""},{"id":"68","naam":"2017 - M - Chateau Croix-Mouton - Bordeaux Superieur","producent":"Château Croix Mouton","soort":"Rood","land":"Frankrijk","regio":"Bordeaux","subregio":"Bordeaux Supérieur","druif":"Cabernet Franc","jaar":2017,"winkel":"Henri Bloem","datum":"2022-09-16","prijs":13.5,"score":2,"opmerkingen":"populair in Azie, herkenbaar aan M, lekker, medium body, niet te droog, wel wat hout"},{"id":"69","naam":"2018 - Chateau Croix - Mouton - Bordeaux Superieur","producent":"Château Croix Mouton","soort":"Rood","land":"Frankrijk","regio":"Bordeaux","subregio":"Bordeaux Supérieur","druif":"97% Merlot und 3% Cabernet Franc","jaar":2018,"winkel":"Henri Bloem","datum":"2023-11-10","prijs":13.5,"score":2,"opmerkingen":"teveel merlot, te zacht niet mijn ding"},{"id":"70","naam":"2021 - Chateau Pigoudet classic rose","producent":"Chateau Pigoudet","soort":"Rose","land":"Frankrijk","regio":"Provence","subregio":"Coteaux d'Aix-en-Provence","druif":"Syrah(Shiraz), Cabernet Sauvignon, Cinsault, Grenache","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":1,"opmerkingen":"klassieke rose, fris, niet echt fruitje"},{"id":"71","naam":"2019 - Chateau de Lastours - 2019 - Arnaud de Berre","producent":"Château de Lastours","soort":"Rood","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Corbières","druif":"Syrah(Shiraz), Grenache, Carignan","jaar":2019,"winkel":"Henri Bloem","datum":"2023-11-10","prijs":8.5,"score":2,"opmerkingen":"eenvoudige doordrinker, niet bijzonder"},{"id":"72","naam":"2019 - Château de Parenchère / Bordeaux Supérieur - Cuvée Raphael","producent":"Château de Parenchère","soort":"Rood","land":"Frankrijk","regio":"Bordeaux","subregio":"Bordeaux Supérieur","druif":"Merlot, cabernet sauvignon","jaar":2019,"winkel":"Henri Bloem","datum":"2023-12-16","prijs":12.95,"score":0,"opmerkingen":""},{"id":"73","naam":"2018 - Chateau De Ribebon - Bordeaux Superieur - ABSC - Alain Aubert","producent":"Château de Ribebon","soort":"Rood","land":"Frankrijk","regio":"Bordeaux","subregio":"Bordeaux Supérieur","druif":"Merlot, cabernet sauvignon, cabernet franc","jaar":2018,"winkel":"Henri Bloem","datum":"2022-09-16","prijs":6.95,"score":3,"opmerkingen":"nog een keer, maar dan naast een echte bordeaux ?!"},{"id":"74","naam":"2017 - Chateau Roudier - Montagne - Saint Emilion","producent":"Château Roudier","soort":"Rood","land":"Frankrijk","regio":"Bordeaux","subregio":"Montagne-Saint-Émilion","druif":"Cabernet Sauvignon, Cabernet Franc, Merlot","jaar":2017,"winkel":"Henri Bloem","datum":"2023-02-10","prijs":10.95,"score":2,"opmerkingen":"De 2019 versie ruikt net wat lekkerder, wat soepelere/fruitiger"},{"id":"75","naam":"2019 - Chateau Roudier - Montagne - Saint Emilion","producent":"Château Roudier","soort":"Rood","land":"Frankrijk","regio":"Bordeaux","subregio":"Montagne-Saint-Émilion","druif":"Cabernet Sauvignon, Cabernet Franc, Merlot","jaar":2019,"winkel":"Henri Bloem","datum":"2023-02-10","prijs":11.5,"score":3,"opmerkingen":"mooie wijn, droog, niet teveel hout, kers, lekker!"},{"id":"76","naam":"2021 - Chateau Roudier - Montagne - Saint Emilion","producent":"Château Roudier","soort":"Rood","land":"Frankrijk","regio":"Bordeaux","subregio":"","druif":"Cabernet Sauvignon, Cabernet Franc, Merlot","jaar":2021,"winkel":"Henri Bloem","datum":"2024-12-23","prijs":null,"score":0,"opmerkingen":""},{"id":"77","naam":"2020 - Scaia - Corvina - Veneto - IGT - Famiglia Castagnedi","producent":"Scaia","soort":"Rood","land":"Italie","regio":"Noord Italie - Veneto","subregio":"","druif":"Corvina","jaar":2020,"winkel":"Wijnpand","datum":"2023-09-23","prijs":null,"score":3,"opmerkingen":"lichtrood, beetje hout in de neus, zacht van smaak, weinig tanine"},{"id":"78","naam":"2020 - Crocus / (2020)L'Atelier - Malbec de Cahors","producent":"Crocus","soort":"Rood","land":"Frankrijk","regio":"Cahors","subregio":"","druif":"Malbec","jaar":2020,"winkel":"Henri Bloem","datum":"2023-12-16","prijs":14.5,"score":3,"opmerkingen":"donker fruit, houtje, medium body, droog (niet zoet), kleine tanine, lekker zo of bij eten"},{"id":"79","naam":"2019 - De Martino - Carmenere - 25 year edition","producent":"De Martino","soort":"Rood","land":"Chili","regio":"Maipo valley","subregio":"","druif":"Carmenere","jaar":2019,"winkel":"Henri Bloem","datum":"2024-03-22","prijs":7.95,"score":3,"opmerkingen":"zwoele carmenere, toegankelijk!"},{"id":"80","naam":"2019 - Costalago - Rosso Veronese - Zeni ","producent":"Zeni","soort":"Rood","land":"Italie","regio":"Noord Italie - Veneto","subregio":"","druif":"Corvina","jaar":2019,"winkel":"Le Grand Cru","datum":"2023-04-07","prijs":13.5,"score":4,"opmerkingen":"nav uit eten bij Noor, chocolode, kersen, heerlijk!!"},{"id":"81","naam":"2022 - La Torre - Primitivo - Puglia","producent":"Feudi Salentini","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Primitivo","jaar":2022,"winkel":"Wijnhuis Heemstede","datum":"2025-09-25","prijs":null,"score":3,"opmerkingen":"Zacht, krenten, klein beetje leer/zand op einde"},{"id":"82","naam":"2023 - Domaine Albert Belle - Crozes-Hermitage","producent":"Domaine Albert Belle","soort":"Rood","land":"Frankrijk","regio":"Rhone","subregio":"Crozes-Hermitage","druif":"syrah","jaar":2023,"winkel":"Henri Bloem","datum":"","prijs":null,"score":2,"opmerkingen":"rijpe tanines, wat vlak, niet echt kruidig of fruitig"},{"id":"83","naam":"2020 - Tautavel Cistes - Domaine Fontanel","producent":"Domaine Fontanel","soort":"Rood","land":"Frankrijk","regio":"","subregio":"","druif":"syrah, grenache, carignan","jaar":2020,"winkel":"Henri Bloem","datum":"","prijs":null,"score":0,"opmerkingen":""},{"id":"84","naam":"2022 - Grains de Folie - Domaine de la Foliette","producent":"Domaine de la Foliette","soort":"Wit","land":"Frankrijk","regio":"Loire","subregio":"Val de Loire","druif":"sauvignon blanc, chardonnay, muscadet","jaar":2022,"winkel":"Henri Bloem","datum":"2024-09-06","prijs":7.5,"score":0,"opmerkingen":""},{"id":"85","naam":"2021 - Domaine de Montmarin - Sauvignon","producent":"Domaine de Montmarin","soort":"Wit","land":"Frankrijk","regio":"Côtes de Thongue","subregio":"","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Henri Bloem","datum":"2023-02-10","prijs":6.95,"score":3,"opmerkingen":"prima SB"},{"id":"86","naam":"2021 - Sancerre - Domaine du Carroir Perrin","producent":"Domaine du Carroir Perrin","soort":"Rose","land":"Frankrijk","regio":"Sancerre","subregio":"","druif":"Pinot Noir","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":2,"opmerkingen":"zeker voor herhaling vatbaar, aarbeitje, klein zuurtje"},{"id":"87","naam":"2021 - Domaine Lafond - Lirac","producent":"Domaine Lafond","soort":"Rood","land":"Frankrijk","regio":"Rhone","subregio":"Lirac","druif":"grenache, syrah, carignan, mourvèdre","jaar":2021,"winkel":"Henri Bloem","datum":"2023-12-16","prijs":12.95,"score":2,"opmerkingen":"stevige wijn voor bij eten, canteren!"},{"id":"88","naam":"2023 - Domaine Guy Moulinier - Le Rose","producent":"Domaine Guy Moulinier","soort":"Rose","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Saint Chinian","druif":"syrah, grenache","jaar":2023,"winkel":"Henri Bloem","datum":"2024-09-06","prijs":8.5,"score":0,"opmerkingen":""},{"id":"89","naam":"2021 - Domaine La Colombette - Sauvignon","producent":"Domaine La Colombette","soort":"Wit","land":"Frankrijk","regio":"Vin de Pays / Pays d'Oc","subregio":"Hérault","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Henri Bloem","datum":"2022-11-05","prijs":6.5,"score":2,"opmerkingen":"goede prijs / kwaliteit, SB in de neus, korte afdronk"},{"id":"90","naam":"2021 - Domaine Lafond - Lirac","producent":"Domaine Lafond","soort":"Rood","land":"Frankrijk","regio":"Rhone","subregio":"Lirac","druif":"grenache, syrah, carignan, mourvèdre","jaar":2023,"winkel":"Henri Bloem","datum":"2026-02-21","prijs":13.5,"score":4,"opmerkingen":"Donker Rood fruit, kaneel, vanille, kruidige afdronk, lekker! Goede prijs/ kwaliteit"},{"id":"91","naam":"2019 - Domaine Santa Duc - aux liex-dits - Gigondas","producent":"Domaine Santa Duc","soort":"Rood","land":"Frankrijk","regio":"Rhone ","subregio":"","druif":"Grenache, Syrah, Mourvédre","jaar":2019,"winkel":"Henri Bloem","datum":"2025-11-21","prijs":26.95,"score":4,"opmerkingen":"Mooi zacht, donker fruit met klein beetje vanille sigaar/hout"},{"id":"92","naam":"2022 - Domaine Santa Duc - Vacquereyas Les Aubes","producent":"Domaine Santa Duc","soort":"Rood","land":"Frankrijk","regio":"Rhone","subregio":"Zuidelijke Rhone / Vacqueyras","druif":"Shiraz/Syrah, Grenache","jaar":2022,"winkel":"Henri Bloem","datum":"2025-12-05","prijs":19.5,"score":4,"opmerkingen":"Medium body rood, niet te zwaar met mooi rood fruit, weinig tanine, weinig hout"},{"id":"93","naam":"2022 - Hahn - GSM - California ","producent":"Hahn winery","soort":"Rood","land":"Amerika","regio":"Monterey","subregio":"","druif":"Grenache / Syrah / Mourvèdre","jaar":2022,"winkel":"Henri Bloem","datum":"2025-03-21","prijs":17.5,"score":4,"opmerkingen":" Zo, lekker, bramen, stevig, zo weer meenemen!"},{"id":"94","naam":"2022 - Domaine Lafond - Roc-Epine - Lirac rouge","producent":"Domaine Lafond","soort":"Rood","land":"Frankrijk","regio":"Rhone","subregio":"Lirac","druif":"GSM","jaar":2022,"winkel":"Henri Bloem","datum":"2025-03-07","prijs":12.95,"score":3,"opmerkingen":"lekker, maar ... je moet m wel even - temp laten komen en decanteren, soepel , zacht pruim fruit"},{"id":"95","naam":"2020 - Domaine Montangeron - Fleurie vieilles vignes de la Cadole","producent":"Domaine Montangeron","soort":"Rood","land":"Frankrijk","regio":"Fleurie","subregio":"","druif":"Gamay","jaar":2020,"winkel":"Henri Bloem","datum":"2022-11-25","prijs":11.5,"score":3,"opmerkingen":"lichte body, soepel, klein peppertje en mooi droog. rood fruit met wat eiken"},{"id":"96","naam":"2020 - Famille Gras - Les Vielles Vignes - Cotes de Rhone","producent":"Domaine Santa Duc","soort":"Rood","land":"Frankrijk","regio":"Rhone ","subregio":"","druif":"","jaar":2020,"winkel":"Henri Bloem","datum":"2025-03-07","prijs":10.95,"score":3,"opmerkingen":"Stevig, oude wijnstokken, donker fruit, kruidig / wat tanine, wel voor peter, niet voor sas"},{"id":"97","naam":"2022 - Buglioni / Valpolicella Classico Superiore -Il Bugiardo Ripasso","producent":"Buglioni","soort":"Rood","land":"Italie","regio":"Noord Italie - Veneto","subregio":"Valpolicella Classico Superiore","druif":"corvina, corvinone, rondinella, oseleta, croatina","jaar":2022,"winkel":"Henri Bloem","datum":"2025-01-25","prijs":20.95,"score":3,"opmerkingen":"lekker, zwart fruit, mond vol, maar prijs / kwaliteit (te duur)"},{"id":"98","naam":"2020 - Domaine Santa Duc - aux liex-dits - Gigondas","producent":"Domaine Santa Duc","soort":"Rood","land":"Frankrijk","regio":"","subregio":"","druif":"","jaar":2020,"winkel":"Henri Bloem","datum":"","prijs":null,"score":0,"opmerkingen":""},{"id":"99","naam":"2023 - Domaine Santa Duc - Les Quatre Terres - Cotes du Rhone","producent":"Domaine Santa Duc","soort":"Rood","land":"Frankrijk","regio":"Rhone ","subregio":"Zuidelijke Rhone","druif":"Grenache, Syrah, Mourvédre","jaar":2023,"winkel":"Henri Bloem","datum":"2025-11-21","prijs":14.95,"score":0,"opmerkingen":""},{"id":"100","naam":"2023 - Valpolicella DOCG Classico - Spada","producent":"Spada","soort":"Rood","land":"Italie","regio":"Noord Italie - Veneto","subregio":"Valpolicella Classico","druif":"Corvina, Rondinella en Molinara","jaar":2023,"winkel":"Henri Bloem","datum":"2025-01-25","prijs":8.95,"score":2,"opmerkingen":"licht body, licht rood, verder prima, maar niet voor mij"},{"id":"101","naam":"2021 - Domaine Stéphane Ogier - Côtes du Rhône Le Temps est Venu Rouge 2021","producent":"Domaine Stéphane Ogier","soort":"Rood","land":"Frankrijk","regio":"Rhone","subregio":"","druif":"Grenache, Syrah, Mourvédre","jaar":2021,"winkel":"Henri Bloem","datum":"2023-12-16","prijs":14.95,"score":2,"opmerkingen":"Medium body, heeft echt tijd nodig, eerst uitschenken, dag later we lekker."},{"id":"102","naam":"2020 - 125 - Uno Due Cinque - Primitivo del Salento","producent":"Feudi Salentini","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Primitivo","jaar":2020,"winkel":"Wijnhuis Heemstede","datum":"","prijs":null,"score":1,"opmerkingen":"Zwart fruit, zwoel, soepel, iets te zoet"},{"id":"103","naam":"2021 - Antonio Fattori - Vignailolo - Danieli - Soave - 2021","producent":"Fattori (Antonio)","soort":"Wit","land":"Italie","regio":"Soave","subregio":"","druif":"Garganega","jaar":2021,"winkel":"Le Grand Cru","datum":"2023-07-07","prijs":11.99,"score":1,"opmerkingen":"heeft geen indruk gemaakt, vergeten te scoren"},{"id":"104","naam":"Scaia Carganega / Chardonnay","producent":"Tenuta Sant'Antonio","soort":"Wit","land":"Italie","regio":"Trevenezie","subregio":"","druif":"Garganega, Chardonnay","jaar":2020,"winkel":"Bacchus","datum":"","prijs":null,"score":2,"opmerkingen":"medium body, niet echt chardonnay, mooi ronde afdronk"},{"id":"105","naam":"2022 - Monte del Fra - Azienda Agricola - Custoza ","producent":"Monte del Frá","soort":"Rood","land":"Italie","regio":"Noord Italie - Veneto","subregio":"","druif":"Garganega, Trebbiano","jaar":2022,"winkel":"Bacchus","datum":"2023-03-18","prijs":9.5,"score":0,"opmerkingen":""},{"id":"106","naam":"2021 - Kebrilla Grillo - Sicilia - Cantina Fina (organic)","producent":"Fina","soort":"Wit","land":"Italie","regio":"Zuid Italie - Sicily","subregio":"Sicily","druif":"Grillo","jaar":2021,"winkel":"Henri Bloem","datum":"2022-11-25","prijs":11.95,"score":3,"opmerkingen":"Fruitig met peper afdronk"},{"id":"107","naam":"2023 - 125 - Uno Due Cinque - Malvasia Bianca - Salento IGP","producent":"Feudi Salentini","soort":"Wit","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Malvasia","jaar":2023,"winkel":"Wijnpand","datum":"2024-11-09","prijs":10.0,"score":0,"opmerkingen":""},{"id":"108","naam":"2019 - di Lenardo dal 1978 - Just me - Merlot - Venezia Giulia","producent":"Di Lenardo","soort":"Rood","land":"Italie","regio":"Noord Italie - Friuli","subregio":"Venezia Giulia","druif":"Merlot","jaar":2019,"winkel":"Bacchus","datum":"2022-11-05","prijs":17.95,"score":1,"opmerkingen":"Top selectie druiven, laat geoogst, niet bijzonder"},{"id":"109","naam":"2021 - Grove Mill - Sauvignon Blanc - Wairau Valley - Marlborough","producent":"Grove Mill","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough / Wairau Valley","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":10.0,"score":2,"opmerkingen":"tropisch fruit, fijne neus"},{"id":"110","naam":"2019 - Hahn - GSM - California ","producent":"Hahn winery","soort":"Rood","land":"Amerika","regio":"Monterey","subregio":"","druif":"Grenache / Syrah / Mourvèdre","jaar":2019,"winkel":"Henri Bloem","datum":"2023-11-10","prijs":15.95,"score":2,"opmerkingen":"lekker maar niet bijzonder"},{"id":"111","naam":"2021 - Vinhas de Pegoes - Syrah","producent":"Vinhas de Pegoes","soort":"Rood","land":"Portugal","regio":"Zuid Portugal","subregio":"Península de Setúbal","druif":"Syrah(Shiraz)","jaar":2021,"winkel":"Henri Bloem","datum":"2023-02-10","prijs":5.95,"score":4,"opmerkingen":"heerlijke shiraz, mooi donker fruit, klein houtje, prima PK verhouding, inslaan!"},{"id":"112","naam":"2021 - Cascina di Mela - Balon Rosso","producent":"Cascina di Mela","soort":"Rood","land":"Italie","regio":"Noord Italie","subregio":"Piemonte","druif":"Merlot / Barbera","jaar":2021,"winkel":"Texel - paal 17","datum":"2023-07-21","prijs":null,"score":3,"opmerkingen":""},{"id":"113","naam":"2020 - Corte Fiore - Lupi Reali - Appassimento","producent":"Corte Fiore","soort":"Rood","land":"Italie","regio":"Abruzzo","subregio":"Montepulciano d'Abruzzo","druif":"Montepulciano","jaar":2020,"winkel":"Henri Bloem","datum":"2022-09-16","prijs":9.95,"score":3,"opmerkingen":"medium body / licht van kleur, heerlijke krentjes, zwart fruit, voor herhaling!!"},{"id":"114","naam":"2020 - Garofoli Kòmaros Rosato","producent":"Garofoli","soort":"Rose","land":"Italie","regio":"Central Italie - Marche","subregio":"","druif":"Montepulciano","jaar":2020,"winkel":"Henri Bloem","datum":"","prijs":null,"score":3,"opmerkingen":""},{"id":"115","naam":"2023 - Jules Taylor Sauvignon Blanc","producent":"Jules Taylor","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2023,"winkel":"Henri Bloem","datum":"2025-04-21","prijs":15.95,"score":0,"opmerkingen":""},{"id":"116","naam":"2021 - Fratelli Novara - Sulpiano - Terre Alfieri - DOCG - Nebbiolo","producent":"Fratelli Novara","soort":"Rood","land":"Italie","regio":"Noord Italie","subregio":"Piemonte","druif":"Nebbiolo","jaar":2021,"winkel":"Wijnhuis Heemstede","datum":"","prijs":null,"score":4,"opmerkingen":"droog, relatief licht rood, maar zijde zacht, kruidig, erg lekker (karaf)"},{"id":"117","naam":"Castiglioni - Chianti - DOCG - 2020 - Frescobaldi","producent":"Frescobaldi / \tTenuta Castiglioni","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Chianti","druif":"Sangiovese","jaar":2020,"winkel":"Gall & Gall","datum":"2022-09-16","prijs":6.99,"score":3,"opmerkingen":"medium-light body met rood fruit, zure kers en beetje eiken, niet verkeerd"},{"id":"118","naam":"2016 - Grasso Fratelli - Barbaresco - San Stunet","producent":"Grasso Fratelli ","soort":"Rood","land":"Italie","regio":"Noord Italie - Piemonte","subregio":"Barbaresco","druif":"Nebbiolo","jaar":2016,"winkel":"Henri Bloem","datum":"2026-02-21","prijs":30.0,"score":4,"opmerkingen":"Mooi droog, rood met oud rood, zacht, donker zwart fruit met koffie/kruiden/tanines"},{"id":"119","naam":"2023 - Paolo Scavino - Langhe - DOC - Nebbiolo","producent":"Paolo Scavino","soort":"Rood","land":"Italie","regio":"Noord Italie - Piemonte","subregio":"Langhe","druif":"Nebbiolo","jaar":2023,"winkel":"Henri Bloem","datum":"2026-03-28","prijs":null,"score":3,"opmerkingen":"medium body, ruikt naar kers, maar tanine/hout dit geen instapwijn"},{"id":"120","naam":"2022 - Langetwins / Sandpoint Pinot Grigio","producent":"Langetwins","soort":"Wit","land":"Amerika","regio":"California (central valley)","subregio":"Lodi","druif":"Pinot Grigio","jaar":2022,"winkel":"Henri Bloem","datum":"2024-03-09","prijs":14.5,"score":0,"opmerkingen":""},{"id":"121","naam":"2023 - Colle Sori - Puglia - Edizione Limitata Appassimento","producent":"Colle Sori","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"","druif":"Negroamaro","jaar":2023,"winkel":"Wijnpand","datum":"2024-11-09","prijs":10.0,"score":3,"opmerkingen":"niet te zoet, zacht en rond zwart fruit"},{"id":"122","naam":"2019 - Cubardi - Primitivo - Salento - Schola Sarmenti","producent":"Schola Sarmenti","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Primitivo","jaar":2019,"winkel":"Henri Bloem","datum":"2022-11-05","prijs":13.95,"score":4,"opmerkingen":"hoog alcohol 15%, zwart fruit, rijp, klein houtje, zoet"},{"id":"123","naam":"H.Lun -1840 - Sauvignon","producent":"H.Lun","soort":"Wit","land":"Italie","regio":"Noord Italie - Zuid Tirol","subregio":"Alto Adige","druif":"Sauvignon Blanc","jaar":2020,"winkel":"Bacchus","datum":"","prijs":null,"score":1,"opmerkingen":"mischien zelfs 2 sterren, proeverij an kees"},{"id":"124","naam":"2023 - AIX - Coteaux D'Aix-en-Provence","producent":"Maison Saint AIX","soort":"Rose","land":"Frankrijk","regio":"Provence","subregio":"Coteaux d'Aix-en-Provence","druif":"Syrah(Shiraz), Grenache, Cinsault","jaar":2023,"winkel":"Henri Bloem","datum":"2024-06-21","prijs":16.95,"score":3,"opmerkingen":""},{"id":"125","naam":"2024 - AIX - Coteaux D'Aix-en-Provence","producent":"Maison Saint AIX","soort":"Rose","land":"Frankrijk","regio":"","subregio":"","druif":"","jaar":2024,"winkel":"Henri Bloem","datum":"","prijs":16.95,"score":3,"opmerkingen":"weer een mooie rose, fruitig, aarbei, niet te droog"},{"id":"126","naam":"2023 - Markowitsch rose","producent":"Markowitsch","soort":"Rose","land":"Oostenrijk","regio":"Carnuntum","subregio":"","druif":"Merlot, Pinot Noir, Blaufrankisch, Zweigelt","jaar":2023,"winkel":"Henri Bloem","datum":"2025-03-07","prijs":9.95,"score":3,"opmerkingen":"lekkere frisse rose, niet te zoet"},{"id":"127","naam":"2021 - Markowitsch rose","producent":"Markowitsch","soort":"Rose","land":"Oostenrijk","regio":"Carnuntum","subregio":"","druif":"Merlot, Pinot Noir, Blaufrankisch, Zweigelt","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":1,"opmerkingen":"wat meer body, beetje kruidig"},{"id":"128","naam":"2021 - Mocen - Verdejo - vino de Rueda","producent":"Mocen","soort":"Wit","land":"Spanje","regio":"Castilla-Léon","subregio":"Rueda","druif":"Verdejo","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":2,"opmerkingen":"perzik, abrikoos, tropisch fruit, botertje"},{"id":"129","naam":"2021 - Monteabellon - Verdejo - Rueda","producent":"Monteabellon","soort":"Wit","land":"Spanje","regio":"Castilla-Léon","subregio":"Rueda","druif":"Verdejo","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":1,"opmerkingen":"zou iets ronder moeten zijn"},{"id":"130","naam":"2021 - Oswald - Sauvignon Blanc - Trocken","producent":"Oswald","soort":"Wit","land":"Duitsland","regio":"Rheinhessen","subregio":"","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Henri Bloem","datum":"2022-11-25","prijs":11.5,"score":3,"opmerkingen":"Prima"},{"id":"131","naam":"2021 - Cupertinum Negromaro Salento","producent":"Cupertinum","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Negroamaro","jaar":2021,"winkel":"Wijnpand","datum":"2024-10-13","prijs":null,"score":4,"opmerkingen":"Lekkere negromaro, zwart fruit, soepel"},{"id":"132","naam":"2020 - Salento - Negroamaro - Selection Tempo Al Vino","producent":"Schola Sarmenti","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Negroamaro","jaar":2020,"winkel":"Henri Bloem","datum":"2022-09-16","prijs":6.5,"score":1,"opmerkingen":"blauw etiket met glaasje, licht/medium rood, beetje tannine in de afdronk"},{"id":"133","naam":"2020 - Roccamora - Negroamaro - Salento - Schola Sarmenti","producent":"Schola Sarmenti","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Negroamaro","jaar":2020,"winkel":"Henri Bloem","datum":"2022-09-16","prijs":9.95,"score":2,"opmerkingen":"donker fruit, niet te zwoel, fijne tanine, prima wijn!"},{"id":"134","naam":"2022 - Jose Toso Estate Malbec - Mendoza","producent":"Pascual Toso","soort":"Rood","land":"Argentinie","regio":"Mendoza","subregio":"","druif":"Malbec","jaar":2022,"winkel":"Henri Bloem","datum":"2025-03-21","prijs":null,"score":0,"opmerkingen":""},{"id":"135","naam":"2020 - Pascual Toso selected vines Malbec - Barrancas vineyards","producent":"Pascual Toso","soort":"Rood","land":"Argentinie","regio":"Mendoza","subregio":"","druif":"Malbec","jaar":2020,"winkel":"Henri Bloem","datum":"","prijs":null,"score":2,"opmerkingen":"rijp zwart fruit, niet te zwoel, zonder hout"},{"id":"136","naam":"2020 - Jose Toso Estate Malbec - Mendoza","producent":"Pascual Toso","soort":"Rood","land":"Argentinie","regio":"Mendoza","subregio":"","druif":"Malbec","jaar":2020,"winkel":"Henri Bloem","datum":"","prijs":null,"score":3,"opmerkingen":"rijp zwart fruit, niet te zwoel, beetje hout"},{"id":"137","naam":"2020 - Number One Constitution Road - Chardonnay - Robertson Winery","producent":"Robertson Winery","soort":"Wit","land":"Zuid Afrika","regio":"West kaap / kuststreek","subregio":"Breede River Valley","druif":"Chardonnay","jaar":2020,"winkel":"Henri Bloem","datum":"2022-11-25","prijs":17.95,"score":1,"opmerkingen":"Echte chardonnay, teveel boter en zuren, misschien te lang open laten staan"},{"id":"138","naam":"2024 - Inama Vulcaia Sauvignon","producent":"Inama ","soort":"Wit","land":"Italie","regio":"Noord Italie - Veneto","subregio":"","druif":"Sauvignon blanc","jaar":2024,"winkel":"Henri Bloem","datum":"2025-08-20","prijs":16.95,"score":4,"opmerkingen":"Wat vollere Sb, niet stuivend maar wel mooi rond citrus, perzik"},{"id":"139","naam":"2018 - Puteus - Salice Salento - Mocavero","producent":"Mocavero","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Negroamaro / Malvasia Nera","jaar":2018,"winkel":"Melgers","datum":"2023-01-27","prijs":10.95,"score":2,"opmerkingen":"simpele maar lekkere wijn, weinig hout, zoet"},{"id":"140","naam":"2022 - Novantanove Botticele 99 - Vendemmia Taridiva - Nero D'Avola - Andrero","producent":"Andrero","soort":"Rood","land":"Italie","regio":"Zuid Italie - Sicily","subregio":"Sicily","druif":"Nero D'avola","jaar":2022,"winkel":"Wijnhuis Heemstede","datum":"2025-09-25","prijs":null,"score":4,"opmerkingen":"Zwoel, zacht, lekkere nasmaak (Vendemmia Tardiva = late oogst)"},{"id":"141","naam":"2021 - Kurtatsch Kofl - Sauvignon","producent":"Kurtatsch","soort":"Wit","land":"Italie","regio":"Noord Italie - Zuid Tirol","subregio":"Alto Adige","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Henri Bloem","datum":"2024-12-23","prijs":20.5,"score":4,"opmerkingen":"Fijn, niet te veel Chris, mooie wijn!"},{"id":"142","naam":"2022 - Feudo Bannera - Nero D'Avola - DOC","producent":"Feudo Bannera","soort":"Rood","land":"Italie","regio":"Zuid Italie - Sicily","subregio":"Sicily","druif":"Nero d'Avola","jaar":2022,"winkel":"Wijnpand","datum":"2025-10-10","prijs":null,"score":0,"opmerkingen":""},{"id":"143","naam":"2023 - Cubardi - Primitivo - Salento - IGT - Schola Sarmenti","producent":"Schola Sarmenti","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Primitivo","jaar":2023,"winkel":"Henri Bloem","datum":"2025-12-31","prijs":13.5,"score":4,"opmerkingen":"vol, donker zoet rijp fruit, stevig wijn, weinig hout, "},{"id":"144","naam":"2021 - Miral - Nero D'Avola - Sicilia","producent":"Fina","soort":"Rood","land":"Italie","regio":"Zuid Italie - Sicily","subregio":"Sicily","druif":"Nero d'Avola","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":9.95,"score":3,"opmerkingen":"kers, klein beetje eiken, mooi rond, light/medium body, lekker, niet te zoet, niet te droog"},{"id":"145","naam":"Famiglia Castellani - Nero d'Avola - Merlot","producent":"Famiglia Castellani ","soort":"Rood","land":"Italie","regio":"Zuid Italie - Sicily","subregio":"Sicily","druif":"Nero d'Avola - Merlot","jaar":null,"winkel":"Deka","datum":"","prijs":null,"score":0,"opmerkingen":"dun, houten afdronk, gekregen, nooit zelf  kopen"},{"id":"146","naam":"2021 - Pietra - Organic Primitivo - Menhir Salento","producent":"Menhir","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Primitivo","jaar":2021,"winkel":"Melgers","datum":"2023-01-27","prijs":12.95,"score":2,"opmerkingen":"primitivo, zwoel, zoet, niet echt bijzonder"},{"id":"147","naam":"2021 - Quota 29 - primitivo - Menhir Salento","producent":"Menhir","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Primitivo","jaar":2021,"winkel":"Melgers","datum":"2023-01-27","prijs":12.95,"score":3,"opmerkingen":"fijn,zwart fruit, kaneel, niet te zwaar"},{"id":"148","naam":"2021 - Per Te - Nero di Troia Appassimento 2021 IGT","producent":"Per te","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"","druif":"Nero di Troia","jaar":2021,"winkel":"Wijnhuis Heemstede","datum":"2024-10-10","prijs":9.95,"score":4,"opmerkingen":"krachtpaster, niet te zwoel, casis,zwart fruit, erg lekker voor deze prijs!"},{"id":"149","naam":"2018 - Santufili - primitivo - Mocavero","producent":"Mocavero","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Primitivo","jaar":2018,"winkel":"Melgers","datum":"2023-01-27","prijs":16.95,"score":3,"opmerkingen":"medium > stevig, soepel, niet te zoet, niet te droog en mooi rond (zwart fruit, klein beetje eiken"},{"id":"150","naam":"2023 - Per te - Nero di Troia - Appassimento","producent":"Per te","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"","druif":"Nero di Troia","jaar":2023,"winkel":"Wijnhuis Heemstede","datum":"2025-09-25","prijs":null,"score":0,"opmerkingen":""},{"id":"151","naam":"2022 - Nero di Troia - Puglia - IGP Cappanera","producent":"Terre Cevico","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"","druif":"Nero di Troia","jaar":2022,"winkel":"Henri Bloem","datum":"2024-12-23","prijs":8.5,"score":0,"opmerkingen":""},{"id":"152","naam":"2020 - Garofoli Gale Falerio Pecorino","producent":"Garofoli","soort":"Wit","land":"Italie","regio":"Central Italie - Marche","subregio":"Falerio","druif":"Pecorino","jaar":2020,"winkel":"Henri Bloem","datum":"","prijs":null,"score":1,"opmerkingen":"medium body, licht droog, citrusfruit"},{"id":"153","naam":"2023 - Pinot Grigio delle Venezie DOC - Le Rive","producent":"Cantina di Bertiolo","soort":"Wit","land":"Italie","regio":"Noord Italie - Friuli","subregio":"","druif":"Pinot Grigio","jaar":2023,"winkel":"Molenaar","datum":"2024-12-22","prijs":null,"score":3,"opmerkingen":"licthgeel, appel, peer"},{"id":"154","naam":"2021 - Pinot Grigio Trentino DOC - Catina Lavis","producent":"Catina Lavis","soort":"Wit","land":"Italie","regio":"Noord Italie","subregio":"Trentino","druif":"Pinot Grigio","jaar":2021,"winkel":"Gall & Gall","datum":"","prijs":9.98,"score":1,"opmerkingen":"net teveel citrustonen"},{"id":"155","naam":"2022 - Fattori - Pinot Grigio delle Venezie","producent":"Fattori","soort":"Wit","land":"Italie","regio":"Noord Italie - Veneto","subregio":"Delle Venezie","druif":"Pinot Grigio","jaar":2022,"winkel":"Le Grand Cru","datum":"2023-04-07","prijs":8.25,"score":2,"opmerkingen":""},{"id":"156","naam":"2023 - Fattori - Pinot Grigio delle Venezie","producent":"Fattori","soort":"Wit","land":"Italie","regio":"Noord Italie - Veneto","subregio":"","druif":"Pinot Grigio","jaar":2023,"winkel":"Le Grand Cru","datum":"2024-08-03","prijs":8.25,"score":3,"opmerkingen":"appel / fruit / lekker"},{"id":"157","naam":"2022 - Villa Fiore - Delle Venenzie DOC - pinot grigio","producent":"Villa Fiore","soort":"Wit","land":"Italie","regio":"Noord Italie - Friuli","subregio":"DOC Delle Venezie","druif":"Pinot Grigio","jaar":2022,"winkel":"Henri Bloem","datum":"2023-03-18","prijs":5.95,"score":1,"opmerkingen":"te zuur"},{"id":"158","naam":"2019 - Piccini - Collezione Oro - Chianti Riserva - DOCG","producent":"Piccini","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Chianti","druif":"Sangiovese","jaar":2019,"winkel":"Gall & Gall","datum":"2022-09-16","prijs":6.49,"score":1,"opmerkingen":"lichte wijn, beetje tanine/hout of peper, voor bij het eten prima maar dat is het"},{"id":"159","naam":"2022 - Villa Fiore - Delle  DOC - pinot grigio Blush","producent":"Villa Fiore","soort":"Wit","land":"Italie","regio":"Noord Italie - Friuli","subregio":"DOC Delle Venezie","druif":"Pinot Grigio","jaar":2024,"winkel":"Henri Bloem","datum":"2025-07-01","prijs":5.95,"score":1,"opmerkingen":"mwah"},{"id":"160","naam":"2022 - Villa Fiore - Delle Venenzie DOC - pinot grigio","producent":"Villa Fiore","soort":"Wit","land":"Italie","regio":"Noord Italie - Friuli","subregio":"DOC Delle Venezie","druif":"Pinot Grigio","jaar":2024,"winkel":"Henri Bloem","datum":"2025-07-01","prijs":5.95,"score":1,"opmerkingen":"te zuur"},{"id":"161","naam":"2022 - L'Elfo Sacchetto - Pinot Grigio delle Venezie DOC","producent":"Sacchetto","soort":"Wit","land":"Italie","regio":"Noord Italie - Veneto","subregio":"","druif":"Pinot Grigio","jaar":2022,"winkel":"Le Grand Cru","datum":"2023-04-07","prijs":8.5,"score":2,"opmerkingen":""},{"id":"162","naam":"2022 - Vette Sauvignon Blanc Tenuta San Leonardo","producent":"San Leonardo","soort":"Wit","land":"Italie","regio":"","subregio":"","druif":"Sauvignon Blanc","jaar":2022,"winkel":"Henri Bloem","datum":"2025-04-21","prijs":13.5,"score":2,"opmerkingen":"wat vollere sauvignon blanc, als je niet dat hele droge/fruitige wil, prima"},{"id":"163","naam":"2021 - Torbreck Barossa valley old vines gsm","producent":"torbreck ","soort":"Rood","land":"Australie","regio":"","subregio":"","druif":"grenache shiraz mourvedre ","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":3,"opmerkingen":"donker fruit, vanille hout"},{"id":"164","naam":"2021 - Vavasour - a watere valley - sauvignon blanc - Marlborough","producent":"Vavasour","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Henri Bloem","datum":"2022-11-05","prijs":10.95,"score":3,"opmerkingen":"lekker SB neus, medium body, droog, citroen, lemon"},{"id":"165","naam":"2020 - Pinot Gris - Vavasour - awatere valley - marlborough","producent":"Vavasour","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Pinot Gris","jaar":2020,"winkel":"Henri Bloem","datum":"2022-11-25","prijs":9.95,"score":0,"opmerkingen":""},{"id":"166","naam":"2022 - Vavasour - a watere valley - sauvignon blanc - Marlborough","producent":"Vavasour","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2022,"winkel":"Henri Bloem","datum":"2024-12-23","prijs":11.5,"score":3,"opmerkingen":"lekkere fris SB, niet zo een volle neus"},{"id":"167","naam":"2022 - Vette di San Leonardo - Sauvignon Blanc","producent":"San Leonardo","soort":"Wit","land":"Italie","regio":"Noord Italie - Zuid Tirol","subregio":"Trentino - Vigneti delle Dolomiti","druif":"Sauvignon Blanc","jaar":2022,"winkel":"Henri Bloem","datum":"","prijs":15.0,"score":1,"opmerkingen":"beetje boterige (vette) sauvignon blanc"},{"id":"168","naam":"2021 - Pinot Grigio - Kurtatsch kellerei - Alto Adige DOC","producent":"Kurtatsch","soort":"Wit","land":"Italie","regio":"Noord Italie - Zuid Tirol","subregio":"Alto Adige","druif":"Pinot Grigio","jaar":2021,"winkel":"Henri Bloem","datum":"2023-03-18","prijs":10.95,"score":3,"opmerkingen":"mmm, dus zo hoort pinot te smaken, beetje pepper, beetje fruit, lekker!"},{"id":"169","naam":"2023 - Pinot Grigio - Kurtatsch kellerei - Alto Adige DOC","producent":"Kurtatsch","soort":"Wit","land":"Italie","regio":"Noord Italie - Zuid Tirol","subregio":"Alto Adige","druif":"Pinot Grigio","jaar":2023,"winkel":"Henri Bloem","datum":"2024-04-26","prijs":11.95,"score":0,"opmerkingen":""},{"id":"170","naam":"2019 - Bramara Malbec - Lujan de Cuyo - Mendoza -  Vina Cobos","producent":"Vina Cobos","soort":"Rood","land":"Argentinie","regio":"Mendoza","subregio":"Lujan de Cuyo","druif":"Malbec","jaar":2019,"winkel":"Henri Bloem","datum":"2022-11-25","prijs":24.95,"score":3,"opmerkingen":"rond, kers, mooie tanine, medium tot full body"},{"id":"171","naam":"2021 - Felino - malbec - mendoza - vina cobos","producent":"Vina Cobos","soort":"Rood","land":"Argentinie","regio":"Mendoza","subregio":"","druif":"Malbec","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":2,"opmerkingen":""},{"id":"172","naam":"2022 - Valpolicella Ripasso - Classico Superiore - Spada","producent":"Spada","soort":"Rood","land":"Italie","regio":"Noord Italie - Veneto","subregio":"Valpolicella Classico Superiore","druif":"Corvina, Rondinella, Molinara","jaar":2022,"winkel":"Henri Bloem","datum":"2025-01-25","prijs":13.95,"score":4,"opmerkingen":"lekker, soepel zwart fruit, verfijnd, niet echt zwaar/vol"},{"id":"173","naam":"2019 - Vinhas de Pegoes - Reserva - Barricas Novas","producent":"Vinhas de Pegoes","soort":"Rood","land":"Portugal","regio":"Zuid Portugal","subregio":"Península de Setúbal","druif":"Syrah(Shiraz), Touriga nacional, Cabernet Sauvignon","jaar":2019,"winkel":"Henri Bloem","datum":"2023-03-18","prijs":9.95,"score":3,"opmerkingen":"Zwoel, rijp, donker fruit"},{"id":"174","naam":"2022 - Weingut Knab - Weisser Burgunder Endiger Engelsberg Kabinett","producent":"Weingut Knab","soort":"Wit","land":"Duitsland","regio":"Baden","subregio":"","druif":"Weisser Burgunder","jaar":2022,"winkel":"Henri Bloem","datum":"2024-04-26","prijs":12.5,"score":2,"opmerkingen":"Mooie droge witte wijn, granny smith"},{"id":"175","naam":"2023 - Weingut Knab - Grauburgunder Kabinet","producent":"Weingut Knab","soort":"Wit","land":"Duitsland","regio":"Baden","subregio":"","druif":"Grauburgunder (pinot gris)","jaar":2023,"winkel":"Henri Bloem","datum":"2024-04-26","prijs":12.5,"score":3,"opmerkingen":"groene asperges / ham , zou voller moeten smaken dan weisser burgunder"},{"id":"176","naam":"2021 - Weingut Knab - Spatburgunder","producent":"Weingut Knab","soort":"Wit","land":"Duitsland","regio":"Baden","subregio":"","druif":"Pinot Gris","jaar":2021,"winkel":"Henri Bloem","datum":"2025-03-07","prijs":12.5,"score":0,"opmerkingen":""},{"id":"177","naam":"2021 - Zehe-Clauss Weissburgunder MC edition","producent":"Weingut Zehe-Clauss","soort":"Wit","land":"Duitsland","regio":"Rheinhessen","subregio":"","druif":"Weissburgunder","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":2,"opmerkingen":"lekker!! perzik, meloen, niet te droog"},{"id":"178","naam":"2020 - Kolkmann Gruner Veltliner - Ried Brunnthal","producent":"Weinhaus Kolkmann","soort":"Wit","land":"Oostenrijk","regio":"Wagram","subregio":"","druif":"Grüner Veltliner","jaar":2020,"winkel":"Henri Bloem","datum":"","prijs":null,"score":3,"opmerkingen":"perzik, nectarine, medium body, nog iets mooi ronder"},{"id":"179","naam":"2022 - Cantina Terlan - Pinot Grigio","producent":"Terlan","soort":"Wit","land":"Italie","regio":"Noord Italie - Zuid Tirol","subregio":"Alto Adige","druif":"Pinot Grigio","jaar":2022,"winkel":"Henri Bloem","datum":"2023-07-28","prijs":14.5,"score":4,"opmerkingen":"Fijne Pg!!"},{"id":"180","naam":"2020 - Kolkmann Zweigelt Fruchtspiel","producent":"Weinhaus Kolkmann","soort":"Rood","land":"Oostenrijk","regio":"Wagram","subregio":"","druif":"Zweigelt","jaar":2020,"winkel":"Henri Bloem","datum":"","prijs":null,"score":3,"opmerkingen":"medium, licht koelen, rood fruit, kers, fris en elegant, nauwelijks tannine"},{"id":"181","naam":"2021 - Kolkmann Gruner Veltliner Fruchtspiel","producent":"Weinhaus Kolkmann","soort":"Wit","land":"Oostenrijk","regio":"Wagram","subregio":"","druif":"Grüner Veltliner","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":2,"opmerkingen":"perzik, nectarine, medium body, mooi rond, klein bubbeltje"},{"id":"182","naam":"2021- Kolkmann - roter veltliner - Ried Scheiben","producent":"Weinhaus Kolkmann","soort":"Wit","land":"Oostenrijk","regio":"Wagram","subregio":"","druif":"Roter Veltliner","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":2,"opmerkingen":"lekker!! perzik, meloen, niet te droog"},{"id":"183","naam":"2021 - Weinviertel DAC - ried Langen - weingut Prechtl","producent":"Wijngut Prechtl","soort":"Wit","land":"Oostenrijk","regio":"Weinviertel","subregio":"","druif":"Grüner Veltliner","jaar":2021,"winkel":"Henri Bloem","datum":"2023-03-18","prijs":9.95,"score":3,"opmerkingen":" Frisse wijn, voor sas te veel zuren, lekker bij asperge / aardse tonen"},{"id":"184","naam":"2021 - Weinviertel DAC classic - weingut Prechtl","producent":"Wijngut Prechtl","soort":"Wit","land":"Oostenrijk","regio":"Weinviertel","subregio":"","druif":"Grüner Veltliner","jaar":2021,"winkel":"Henri Bloem","datum":"2024-03-04","prijs":8.95,"score":3,"opmerkingen":"wit fruit, medium, mooi, lekker"},{"id":"185","naam":"2021 - Benastra - La garrigue - Joseph Paille","producent":"Domaine Benastra","soort":"Rood","land":"Frankrijk","regio":"Roussillon","subregio":"","druif":"Grenache /  syrah","jaar":2021,"winkel":"kado","datum":"2024-12-22","prijs":17.0,"score":3,"opmerkingen":"medium body / licht met rood fruit, kruidig, prima doordrinker"},{"id":"186","naam":"Aveleda Vinho Verde Doc - 2022 - Loureiro & Alvarinho","producent":"Aveleda","soort":"Wit","land":"Portugal","regio":"Minho","subregio":"Vinho Verde","druif":"Loureiro, Alvarinho","jaar":2022,"winkel":"kado Mignon/Paulo","datum":"2023-09-22","prijs":null,"score":2,"opmerkingen":"meloen, fijne neus, wel voor herhaling vatbaar, (vis/mosselen)"},{"id":"187","naam":"2022 - Barinas - Sauvignon Blanc","producent":"Bodegas Alceño","soort":"Wit","land":"Spanje","regio":"","subregio":"","druif":"Sauvignon Blanc","jaar":2022,"winkel":"Kado Petra / Ruud","datum":"2024-02-17","prijs":null,"score":0,"opmerkingen":""},{"id":"188","naam":"2022 - Toques & Clochers - Limoux - Clocher de Cepie - Sieur D'Arques","producent":"Sieur D'Arques","soort":"Wit","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Limoux","druif":"Chardonnay","jaar":2022,"winkel":"kado SDB groep","datum":"2024-02-13","prijs":null,"score":3,"opmerkingen":"pale yellow, round, fruity, generous"},{"id":"189","naam":"2022 - Finca Tres Olmos - Verdejo lias - Rueda ddo - Garcia Revalo","producent":"Bodegas Garciarévalo","soort":"Wit","land":"Spanje","regio":"","subregio":"","druif":"Verdejo","jaar":2022,"winkel":"Le Grand Cru","datum":"2023-04-07","prijs":10.5,"score":4,"opmerkingen":"Heerlijk neus, volle fruitige smaak met hele kleine houttoets"},{"id":"190","naam":"2022 - Syrah Grenache Creation","producent":"Creation Estate","soort":"Wit","land":"Zuid Afrika","regio":"West kaap / hermanus","subregio":"Hemel-en-Aarde Vallei.","druif":"Syrah Grenache","jaar":2022,"winkel":"Le Grand Cru","datum":"2024-10-13","prijs":16.95,"score":3,"opmerkingen":"nav proeverij - lekker! voor bij asperges"},{"id":"191","naam":"2022 - The art of Pinot Noir by Jean-Claude & Carolyn Martin","producent":"Creation Estate","soort":"Rood","land":"Zuid Afrika","regio":"West kaap / hermanus","subregio":"Hemel-en-Aarde Vallei.","druif":"Pinot Noir","jaar":2022,"winkel":"Le Grand Cru","datum":"2024-10-13","prijs":65.4,"score":2,"opmerkingen":"nav proeverij, prijs / kwaliteit niet inverhouding"},{"id":"192","naam":"2022 - The art of Chardonnay by Jean-Claude & Carolyn Martin","producent":"Creation Estate","soort":"Wit","land":"Zuid Afrika","regio":"West kaap / hermanus","subregio":"Hemel-en-Aarde Vallei.","druif":"Chardonnay","jaar":2022,"winkel":"Le Grand Cru","datum":"2024-10-13","prijs":65.4,"score":4,"opmerkingen":"nav proeverij, zachte chardonnay, te duur"},{"id":"193","naam":"2020 - D.C De Chansac - Sauvignon Blanc - Grande Cuvee","producent":"De Chansac","soort":"Wit","land":"Frankrijk","regio":"Cotes de Gascogne","subregio":"","druif":"Sauvignon Blanc","jaar":2020,"winkel":"Le Grand Cru","datum":"2023-04-07","prijs":9.75,"score":0,"opmerkingen":""},{"id":"194","naam":"2021 - Capetownn- Sauvignon Blanc WO - Diemersdal","producent":"Diemersdal","soort":"Wit","land":"Zuid Afrika","regio":"","subregio":"","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Le Grand Cru","datum":"2024-08-03","prijs":11.5,"score":0,"opmerkingen":""},{"id":"195","naam":"Marius - Dourbie","producent":"Dourbie","soort":"Wit","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Pay D'Herault","druif":"Terret Bourret / Grenache Gris","jaar":2022,"winkel":"Le Grand Cru","datum":"2023-08-06","prijs":null,"score":4,"opmerkingen":"van Marco gekregen, heerlijk subtiel fruit, fijne wijn!!"},{"id":"196","naam":"2023 - Cantina Terlan - Pinot Grigio","producent":"Terlan","soort":"Wit","land":"Italie","regio":"Noord Italie - Zuid Tirol","subregio":"Alto Adige","druif":"Pinot Grigio","jaar":2023,"winkel":"Henri Bloem","datum":"2024-06-07","prijs":14.95,"score":0,"opmerkingen":""},{"id":"197","naam":"2021 - Pink Colomb Bay - Pinot Noir","producent":"Domaine La Colombette","soort":"Rose","land":"Frankrijk","regio":"Vin de France","subregio":"","druif":"Pinot Noir","jaar":2021,"winkel":"Henri Bloem","datum":"2023-02-10","prijs":9.95,"score":4,"opmerkingen":"heerlijk lichte rose, doordrinker, rood fruit, aardbei, niet te zoet"},{"id":"198","naam":"2022 - Critera - primitivo Salento (IGT)","producent":"Schola Sarmenti","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"","druif":"Primitivo","jaar":2022,"winkel":"Henri Bloem","datum":"2024-11-01","prijs":null,"score":0,"opmerkingen":""},{"id":"199","naam":"2021 - Petit Bourgeois - Sauvignon Blanc","producent":"Henri Bourgeois","soort":"Wit","land":"Frankrijk","regio":"","subregio":"","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Le Grand Cru","datum":"2023-04-07","prijs":14.75,"score":2,"opmerkingen":"volle SB, lekker bij wat pittiger gerecht"},{"id":"200","naam":"2022 - Misty Cove wines - Organic Sauvignon Blanc","producent":"Misty Cove","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2022,"winkel":"Le Grand Cru","datum":"2023-07-07","prijs":10.95,"score":2,"opmerkingen":"Fijne neus maar iets te droog/  te kort"},{"id":"201","naam":"Les Bertholets - Grenache - Saint Guilhem le Desert - 2022","producent":"Paul Albert","soort":"Rose","land":"Frankrijk","regio":"Saint Guilhem le Desert","subregio":"","druif":"Grenache ","jaar":2022,"winkel":"Le Grand Cru","datum":"2023-07-07","prijs":7.99,"score":2,"opmerkingen":"mooie rose, iets van citrus / grapefruit "},{"id":"202","naam":"2020 - Chiaccierino - primitivo - Manduria","producent":"Schola Sarmenti","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Manduria","druif":"Primitivo","jaar":2020,"winkel":"Henri Bloem","datum":"2024-12-23","prijs":14.95,"score":3,"opmerkingen":"prima primitivo"},{"id":"203","naam":"2020 - Spätburgunder - shelter winery - limited edition","producent":"Shelter Winery","soort":"Rood","land":"Duitsland","regio":"","subregio":"","druif":"","jaar":2020,"winkel":"Le Grand Cru","datum":"2023-04-07","prijs":16.99,"score":0,"opmerkingen":""},{"id":"204","naam":"2022 - Chiaccierino - primitivo - Manduria","producent":"Schola Sarmenti","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Manduria","druif":"Primitivo","jaar":2022,"winkel":"Henri Bloem","datum":"2026-02-21","prijs":null,"score":0,"opmerkingen":""},{"id":"205","naam":"2022 - Picpoul de Pinet - Vignoble Muret","producent":"Vignoble Muret","soort":"Wit","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Languedoc","druif":"Picoul","jaar":2022,"winkel":"Le Grand Cru","datum":"2023-07-07","prijs":9.65,"score":0,"opmerkingen":""},{"id":"206","naam":"Warwick - professor Black - Sauvignon Blanc 2022 - Stellenbosch","producent":"Warwick","soort":"Wit","land":"Zuid Afrika","regio":"Stellenbosch","subregio":"","druif":"Sauvignon Blanc","jaar":2022,"winkel":"Le Grand Cru","datum":"2023-07-07","prijs":13.55,"score":1,"opmerkingen":"iets te veel boter, klein houtje, atypische SB"},{"id":"207","naam":"2022 - Cubardi - Primitivo - Salento - IGT - Schola Sarmenti","producent":"Schola Sarmenti","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Primitivo","jaar":2022,"winkel":"Henri Bloem","datum":"2025-01-25","prijs":13.95,"score":3,"opmerkingen":"vol, zwart fruit, beetje kruiden/pepertje"},{"id":"208","naam":"2023 - Pink Colomb Bay - Pinot Noir","producent":"Domaine La Colombette","soort":"Rose","land":"Frankrijk","regio":"Vin de France","subregio":"","druif":"Pinot Noir","jaar":2023,"winkel":"Henri Bloem","datum":"2024-04-26","prijs":9.95,"score":4,"opmerkingen":"lekker, misschien te zoet, maar lekker toegankelijk"},{"id":"209","naam":"2021 - Cubardi - Primitivo - Salento - Schola Sarmenti","producent":"Schola Sarmenti","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Primitivo","jaar":2021,"winkel":"Henri Bloem","datum":"","prijs":null,"score":0,"opmerkingen":""},{"id":"210","naam":"2019 - Valpolicella Ripasso - Classico Superiore - Spada","producent":"Spada","soort":"Rood","land":"Italie","regio":"Noord Italie - Veneto","subregio":"Valpolicella Classico Superiore","druif":"Corvina, Rondinella, Molinara","jaar":2019,"winkel":"Henri Bloem","datum":"2022-12-23","prijs":12.95,"score":3,"opmerkingen":"Soepele ripasso, medium, niet te fruitig, weinig body, allemans vriend"},{"id":"211","naam":"2020 - Valpolicella Ripasso - Classico Superiore - Spada","producent":"Spada","soort":"Rood","land":"Italie","regio":"Noord Italie - Veneto","subregio":"Valpolicella","druif":"Corvina, Rondinella, Molinara","jaar":2020,"winkel":"Henri Bloem","datum":"2023-12-16","prijs":12.95,"score":0,"opmerkingen":"ander jaar?"},{"id":"212","naam":"2022- J. Fernando - Verdejo","producent":"Fernando de Castilla","soort":"Wit","land":"Spanje","regio":"Rueda","subregio":"","druif":"Verdejo","jaar":2022,"winkel":"Milco","datum":"2024-03-30","prijs":8.5,"score":3,"opmerkingen":"wat voller dan een SB, lekker met iets pittigs"},{"id":"213","naam":"2015 - Vinas Don Martin - Selection Privada - Malbec / Cabernet Sauvignon","producent":"Vinas Don Martin","soort":"Rood","land":"Argentinie","regio":"Mendoza","subregio":"Agrelo","druif":"Malbec, Cabernet Sauvignon","jaar":2015,"winkel":"Milco","datum":"2024-03-30","prijs":12.0,"score":4,"opmerkingen":"zwart fruit, niet te zoet, beetje peper/hout, soepel en medium/stevig body"},{"id":"214","naam":"2023 - Collection de Cepages - N6 - Sauvignon Blanc","producent":"Calmel & Joseph","soort":"Wit","land":"Frankrijk","regio":"","subregio":"","druif":"Sauvignon Blanc","jaar":2023,"winkel":"Molenaar","datum":"2025-01-22","prijs":null,"score":2,"opmerkingen":"kado ruud / christel - doordrinker"},{"id":"215","naam":"2020 - DuePalme - tenuta Albrizzi - Primitivo / Cabernet Sauvignon","producent":"Cantine Due Palme","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Primitivo, Cabernet Sauvignon","jaar":2020,"winkel":"Bacchus","datum":"2023-03-18","prijs":10.7,"score":2,"opmerkingen":"prima, maar niet echt uitgesproken"},{"id":"216","naam":"Rose La Baume Languedoc - sud de france 2021","producent":"Domaine de la Baume","soort":"Rose","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"","druif":"Syrah(Shiraz), Grenache","jaar":2021,"winkel":"Molenaar","datum":"","prijs":7.5,"score":3,"opmerkingen":"lekker, niet te zoet, niet te droog"},{"id":"217","naam":"2022 - Collection de Cepages - N3 - Syrah","producent":"Calmel & Joseph","soort":"Rood","land":"Frankrijk","regio":"","subregio":"","druif":"Pays d'OC","jaar":2022,"winkel":"Molenaar","datum":"2025-01-22","prijs":null,"score":3,"opmerkingen":"kado ruud / christel - vol zwart fruit, lekker"},{"id":"218","naam":"2021 - Foncastel Picpoul de Pinet - Languedoc","producent":"Foncastel","soort":"Wit","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Languedoc","druif":"Picpoul","jaar":2021,"winkel":"Molenaar","datum":"","prijs":9.0,"score":3,"opmerkingen":"mooi droog, medium body, verfijnd,"},{"id":"219","naam":"2021 - Kruger Family wines - the forgotten vineyard - shiraz","producent":"Kruger","soort":"Rood","land":"Zuid Afrika","regio":"West kaap / kuststreek","subregio":"Stellenbosch","druif":"Syrah(Shiraz)","jaar":2021,"winkel":"Ockhuysen","datum":"","prijs":8.0,"score":1,"opmerkingen":"licht, medium, in herinnering veel lekkerder"},{"id":"220","naam":"2023 - Little Kiwi - Sauvignon Blanc - Marlborough - 2023","producent":"Megan Simmonds","soort":"Wit","land":"Nw Zeeland","regio":"Marlbourough","subregio":"","druif":"Sauvignon Blanc","jaar":2023,"winkel":"Paul","datum":"2024-04-01","prijs":7.0,"score":3,"opmerkingen":"prima SB!!"},{"id":"221","naam":"2021 - Monte Del Fra - Chiaretto di Bardolino","producent":"Monte del Frá","soort":"Rose","land":"Italie","regio":"Noord Italie - Veneto","subregio":"Bardolino","druif":"Riesling, Corvina Veronese","jaar":2021,"winkel":"Bacchus","datum":"","prijs":null,"score":3,"opmerkingen":"Fris, droog, aanrader"},{"id":"222","naam":"2024 - Rose Domaine La Colombette","producent":"Domaine La Colombette","soort":"Rose","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"","druif":"Grenache","jaar":2024,"winkel":"Henri Bloem","datum":"2025-04-21","prijs":5.95,"score":4,"opmerkingen":"voor deze prijs een mooie fruitige rose, goede prijs kwaliteit"},{"id":"223","naam":"2022 - Castellare di Casterllina - Chianti Classico","producent":"Castellare di Casterllina","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Chianti Classico","druif":"Sangiovese (+canaiolo)","jaar":2022,"winkel":"Henri Bloem","datum":"2024-06-07","prijs":19.95,"score":3,"opmerkingen":"Lekker maar prijs/kwaliteit te duur"},{"id":"224","naam":"2023 - Domaine de l'Arjolle Côtes de Thongue Equinoxe Viognier Sauvignon","producent":"Domaine de l'Arjolle","soort":"Wit","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Cotes de Thongue","druif":"Viognier / Sauvignon","jaar":2023,"winkel":"Verhaar Wijn","datum":"2024-10-01","prijs":null,"score":4,"opmerkingen":"kado gekregen, fijn vanile citurs, net iets voller dan een SB, mooi rond"},{"id":"225","naam":"2020 - XxX - Coteaux D'Aix-en-Provence","producent":"XxX","soort":"Rose","land":"Frankrijk","regio":"Provence","subregio":"Coteaux d'Aix-en-Provence","druif":"Cabernet Sauvignon, Syrah, Grenache","jaar":2020,"winkel":"Voordeelwijn.nl","datum":"","prijs":12.0,"score":4,"opmerkingen":"mooi droog, aardbeitje, fris (niet zoet), kado M&M"},{"id":"226","naam":"2020 - Panizzi Chianti Colli Senesi","producent":"Panizzi","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Chianti Colli Senesi","druif":"Sangiovese (+merlot, cabernet sauvignon)","jaar":2020,"winkel":"Henri Bloem","datum":"2024-06-07","prijs":11.5,"score":3,"opmerkingen":"prima!"},{"id":"227","naam":"2023 - MiP - Made in Provence - cotes de provence","producent":"Domaine des Diables","soort":"Rose","land":"Frankrijk","regio":"Provence","subregio":"Cotes de Provence","druif":"Syrah(Shiraz), Grenache, Cinsault","jaar":2023,"winkel":"Wijnhuis Heemstede","datum":"2024-08-24","prijs":16.0,"score":4,"opmerkingen":"niet te zoet, heerlijke rose, niet te koud zetten!"},{"id":"228","naam":"2019 - Poggio alla Guardia - Maremma Toscana DOC","producent":"Rocca di Frassinello","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Maremma DOC","druif":"Sangiovese, cabernet sauvignon, merlot","jaar":2019,"winkel":"Henri Bloem","datum":"2024-11-01","prijs":null,"score":0,"opmerkingen":""},{"id":"229","naam":"2021 - Frassinello - Le Sughere di Frassinello","producent":"Rocca di Frassinello","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Maremma IGT","druif":"sangioveto, merlot, cabernet sauvignon","jaar":2021,"winkel":"Henri Bloem","datum":"2025-12-05","prijs":24.95,"score":2,"opmerkingen":"prijs kwaliteit, medium body, hout, tanine"},{"id":"230","naam":"2020 - Antieri - susumaniello - Salento - Schola Sarmenti","producent":"Schola Sarmenti","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Susumaniello","jaar":2020,"winkel":"Henri Bloem","datum":"2022-11-05","prijs":15.95,"score":2,"opmerkingen":"lekker, vol body, beetje eiken, zwart fruit"},{"id":"231","naam":"2021 - M. by Mont Gravet","producent":"Le Cellier d'Eole","soort":"Rose","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Languedoc","druif":"Grenache noir","jaar":2021,"winkel":"Wijnhuis Heemstede","datum":"","prijs":null,"score":1,"opmerkingen":"Fris, weinig fruit, doordrinker"},{"id":"232","naam":"2024 - 125 - rosato saelento -Feudi Salentini","producent":"Feudi Salentini","soort":"Rose","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Susumaniello ","jaar":2024,"winkel":"Wijnpand","datum":"","prijs":null,"score":1,"opmerkingen":"kleine bubbel, valt af.."},{"id":"233","naam":"2022 - Cantina Terlan - Pinot Bianco","producent":"Terlan","soort":"Wit","land":"Italie","regio":"Noord Italie - Zuid Tirol","subregio":"Alto Adige","druif":"Weissburgunder, Pinot Bianco (Blanc)","jaar":2022,"winkel":"Henri Bloem","datum":"2024-03-09","prijs":10.95,"score":4,"opmerkingen":"verfijnd , lekkerrrrrr, goede prijs kwal"},{"id":"234","naam":"2022 - Anne de Joyeuse - Limoux - Chardonnay","producent":"Anne de Joyeuse","soort":"Wit","land":"Frankrijk","regio":"Languedoc-Roussillon ","subregio":"Limoux","druif":"Chardonnay, Sauvignon Blanc","jaar":2022,"winkel":"Wijnpand","datum":"","prijs":null,"score":3,"opmerkingen":"Niet zo boterig als char, lekker atypisch"},{"id":"235","naam":"2020 - Kate - Sauvignon Blanc","producent":"Aubert et Mathieu","soort":"Wit","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Languedoc","druif":"Sauvignon Blanc","jaar":2020,"winkel":"Wijnpand","datum":"2022-10-27","prijs":12.5,"score":1,"opmerkingen":"sb, droog, medium body, citrus/ananas, niet bijzonder"},{"id":"236","naam":"2021 - Baron de Ley Rosado de Lagrima Rioja ","producent":"Barón de Ley","soort":"Rose","land":"Spanje","regio":"Rioja","subregio":"","druif":"Garganega","jaar":2021,"winkel":"Wijnpand","datum":"","prijs":null,"score":0,"opmerkingen":"??"},{"id":"237","naam":"2023 - The Sheep reborn - Sauvignon Black","producent":"Bodegas Alceño","soort":"Wit","land":"Spanje","regio":"Jumilla","subregio":"","druif":"Sauvignon Blanc","jaar":2023,"winkel":"Wijnpand","datum":"2024-06-13","prijs":6.95,"score":4,"opmerkingen":"wat vollere SB, mooi fruit, zacht, mooie prijs kwaliteit"},{"id":"238","naam":"2021 - xenysel - pie franco- monastrell-valle hoya torres","producent":"Bodegas Xenysel","soort":"Rood","land":"Spanje","regio":"Jumilla","subregio":"","druif":"Monastrell","jaar":2021,"winkel":"Wijnpand","datum":"2023-06-30","prijs":null,"score":4,"opmerkingen":"medium, fruitig naar zwoel met klein beetje hout"},{"id":"239","naam":"2020 - The Wolftrap, Boekenhoutskloof","producent":"Boekenhoutskloof","soort":"Wit","land":"Zuid Afrika","regio":"West kaap / kuststreek","subregio":"Franschhoek","druif":"Viognier/ Chenin Blanc / Grenache Blanc","jaar":2020,"winkel":"Wijnpand","datum":"","prijs":8.0,"score":1,"opmerkingen":"Fruitig, vol, bloemig, boterig"},{"id":"240","naam":"2022 - Susumaniello rose - Feudi Salentini","producent":"Feudi Salentini","soort":"Rose","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Susumaniello ","jaar":2022,"winkel":"Wijnpand","datum":"2023-08-12","prijs":null,"score":4,"opmerkingen":"Niet te droog, niet te fruitig, lekker!"},{"id":"241","naam":"2023 - Cantina Terlan - Pinot Bianco","producent":"Terlan","soort":"Wit","land":"Italie","regio":"Noord Italie - Zuid Tirol","subregio":"Alto Adige","druif":"Weissburgunder, Pinot Bianco (Blanc)","jaar":2023,"winkel":"Henri Bloem","datum":"2025-11-21","prijs":14.5,"score":0,"opmerkingen":""},{"id":"242","naam":"2023 - Cantina Terlan - Pinot Bianco (2e fles)","producent":"Terlan","soort":"Wit","land":"Italie","regio":"Noord Italie - Zuid Tirol","subregio":"Alto Adige","druif":"Weissburgunder, Pinot Bianco (Blanc)","jaar":2023,"winkel":"Henri Bloem","datum":"","prijs":null,"score":0,"opmerkingen":""},{"id":"243","naam":"2022 - Terra Scura - Chianti - DOCG - Cibreo","producent":"Terra Scura","soort":"Rood","land":"Italie","regio":"Central Italie - Toscane","subregio":"Chianti","druif":"Sangiovese","jaar":2022,"winkel":"Wijnpand","datum":"2025-10-10","prijs":null,"score":2,"opmerkingen":"Zacht, beetje hout/leer, decanteren"},{"id":"244","naam":"2024 - MiP - Made in Provence - cotes de provence classic","producent":"Domaine des Diables","soort":"Rose","land":"Frankrijk","regio":"Provence","subregio":"Cotes de Provence","druif":"Syrah(Shiraz), Grenache, Cinsault","jaar":2024,"winkel":"Wijnpand","datum":"2025-03-30","prijs":16.0,"score":4,"opmerkingen":"rose, framboos, aardbei, heel mooi ronde afdronk!"},{"id":"245","naam":"2021 - MiP - Made in Provence - cotes de provence","producent":"Domaine des Diables","soort":"Rose","land":"Frankrijk","regio":"Provence","subregio":"Cotes de Provence","druif":"Syrah(Shiraz), Grenache, Cinsault","jaar":2021,"winkel":"Wijnpand","datum":"","prijs":15.0,"score":3,"opmerkingen":"rose, framboos, aardbei, mooi"},{"id":"246","naam":"2023 - Appelation Alsace Controllee - Domaine Fernand Engel - Pinot Gris Reserve","producent":"Domaine Fernand Engel","soort":"Wit","land":"Frankrijk","regio":"Alsace","subregio":"","druif":"Pinot Gris","jaar":2023,"winkel":"Wijnpand","datum":"2025-10-03","prijs":15.0,"score":3,"opmerkingen":"Zacht, niet te droog, perzik/druivensap, lekker!"},{"id":"247","naam":"Pas si vite - Sud de France - Grande reserve 2020","producent":"Domaine Saint Philippe","soort":"Rood","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Languedoc","druif":"Grenache / Syrah / Mourvèdre","jaar":2020,"winkel":"Wijnpand","datum":"2022-10-27","prijs":12.5,"score":3,"opmerkingen":"GSM, zondoorstoofd, iets kruidig en vol van smaak"},{"id":"248","naam":"El Coto - Blanco - 2022 - Rioja - Ddoc","producent":"El Coto","soort":"Wit","land":"Spanje","regio":"Rioja","subregio":"Alavesa","druif":"Viura","jaar":2022,"winkel":"Wijnpand","datum":"2023-10-01","prijs":null,"score":1,"opmerkingen":"niet mijn witte wijn, teveel citrus"},{"id":"249","naam":"2019 - El Coto - Crianza - Rioja - Ddoc","producent":"El Coto","soort":"Rood","land":"Spanje","regio":"Rioja","subregio":"Alavesa","druif":"Tempranillo","jaar":2019,"winkel":"Wijnpand","datum":"2023-10-01","prijs":null,"score":1,"opmerkingen":"Te licht, aards, niet om nog een keer te kopen"},{"id":"250","naam":"2022 - Falsebay - Slow Chenin Blanc 2022","producent":"Falsebay","soort":"Wit","land":"Zuid Afrika","regio":"West kaap / kuststreek","subregio":"Stellenbosch","druif":"Chenin Blanc","jaar":2022,"winkel":"Wijnpand","datum":"","prijs":null,"score":3,"opmerkingen":" Peer, meloen, mooi rond, lekker!"},{"id":"251","naam":"2021 - Susumaniello Salento IGP -2021 - Feudi Salentini","producent":"Feudi Salentini","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Salento","druif":"Susumaniello ","jaar":2021,"winkel":"Wijnpand","datum":"2024-02-14","prijs":14.95,"score":3,"opmerkingen":"Lekker volle ronde donker fruit / medium body"},{"id":"252","naam":"2021 - Famille Cros-Pujol Zangre ","producent":"Famille Cros-Pujol","soort":"Rose","land":"Frankrijk","regio":"Cotes d'oc","subregio":"","druif":"Cinsault, Grenache","jaar":2021,"winkel":"Wijnpand","datum":"","prijs":null,"score":1,"opmerkingen":"fris, licht, droog"},{"id":"253","naam":"2021 -val de loire - generations- muscadet - famille lieubeau","producent":"Famille Lieubeau","soort":"Wit","land":"Frankrijk","regio":"Val de Loire","subregio":"","druif":"Melon de Bourgogne","jaar":2021,"winkel":"Wijnpand","datum":"2023-06-30","prijs":null,"score":1,"opmerkingen":"ruikt fijn naar wit fruit, medium body, beetje boter/olie"},{"id":"254","naam":"2023 - Ottella Lugana Bianco","producent":"Ottella","soort":"Wit","land":"Italie","regio":"Noord Italie - Veneto","subregio":"Lugana","druif":"Trebbiano di lugana","jaar":2023,"winkel":"Henri Bloem","datum":"2025-04-21","prijs":13.5,"score":0,"opmerkingen":""},{"id":"255","naam":"2019 - Garofoli Macrina Verdicchio dei castelli di jesi","producent":"Garofoli","soort":"Wit","land":"Italie","regio":"Central Italie - Marche","subregio":"Dei castelli di jesi","druif":"Verdicchio","jaar":2019,"winkel":"Henri Bloem","datum":"","prijs":null,"score":1,"opmerkingen":"petrol, medium perzik, abrikoos, medium dry"},{"id":"256","naam":"Verdicchio di Matelica - Colpaola","producent":"Colpaola","soort":"Wit","land":"Italie","regio":"Marken","subregio":"Matelica","druif":"Verdicchio","jaar":null,"winkel":"Grapedistrict","datum":"","prijs":null,"score":1,"opmerkingen":""},{"id":"257","naam":"2021 - Villa Bianchi - Verdicchio dei Castelli di Jesi - Classico - Umani Ronchi","producent":"Umani Ronchi","soort":"Wit","land":"Italie","regio":"Central Italie - Marche","subregio":"Dei castelli di jesi","druif":"Verdicchio","jaar":2021,"winkel":"Gall & Gall","datum":"","prijs":7.98,"score":3,"opmerkingen":"medium body, peer, ananas, lekker, droog maar niet te droog"},{"id":"258","naam":"2023 - Vignamato Verdicchio dei Castelli di Jesi","producent":"Vignamato","soort":"Wit","land":"Italie","regio":"Marken","subregio":"","druif":"Verdicchio","jaar":2023,"winkel":"Le Grand Cru","datum":"2024-08-03","prijs":9.95,"score":0,"opmerkingen":""},{"id":"259","naam":"2019 - Caladessa doc Alentejo - Herdade Dacalada","producent":"Herdade da Calada","soort":"Wit","land":"Portugal","regio":"Alentejano","subregio":"","druif":"Arinto de Bucelas, Fernao Pires, Alvarinho","jaar":2019,"winkel":"Wijnpand","datum":"2022-10-27","prijs":12.5,"score":2,"opmerkingen":"zacht, steenfruit, grapefruit, citrus, "},{"id":"260","naam":"2023 - Wintergenossenschaft - Herxheim am Berg - Grauburgunder - Pfalz","producent":"Herxheim am Berg","soort":"Wit","land":"Duitsland","regio":"Pfalz","subregio":"","druif":"Grauburgunder Hang","jaar":2023,"winkel":"Wijnpand","datum":"2025-10-03","prijs":15.0,"score":4,"opmerkingen":"Mooi droog, lijkt op pinot grigio, voor herhaling vatbaar!!"},{"id":"261","naam":"2022 - Jean Claude Mas - Mon Rose","producent":"Jean Claude Mas","soort":"Rose","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Languedoc","druif":"Grenache, Cinsault","jaar":2022,"winkel":"Wijnpand","datum":"2023-05-12","prijs":11.0,"score":4,"opmerkingen":"rond, fruitje, fijn!!"},{"id":"262","naam":"Gocce di Rugiada - Costa Toscana - Vermentino","producent":"Stefanini Tronchetti","soort":"Wit","land":"Italie","regio":"Central Italie - Toscane","subregio":"Costa Toscane","druif":"Vermentino","jaar":2020,"winkel":"????","datum":"","prijs":null,"score":3,"opmerkingen":"lekker maar waar gekocht?"},{"id":"263","naam":"2021 - Misty Cove estate series Sauvignon Blanc","producent":"Misty Cove","soort":"Wit","land":"Nw Zeeland","regio":"South Island","subregio":"Marlborough","druif":"Sauvignon Blanc","jaar":2021,"winkel":"Wijnpand","datum":"","prijs":null,"score":2,"opmerkingen":"sb stijl, citrus, light body, fijne peer en meloen in de neus"},{"id":"264","naam":"2021 - Mister Wisdom - cabernet sauvignon","producent":"Mister Wisdom","soort":"Rood","land":"Amerika","regio":"","subregio":"","druif":"Cabernet Sauvignon","jaar":2021,"winkel":"Wijnpand","datum":"","prijs":null,"score":4,"opmerkingen":"Cassis, zwarte bes, soepel"},{"id":"265","naam":"2021 - Grande Cuvee Montgravet Colombard","producent":"Mont Gravet","soort":"Wit","land":"Frankrijk","regio":"Cotes de Gascogne","subregio":"","druif":"Sauvignon Blanc / Colombard","jaar":2021,"winkel":"Wijnpand","datum":"","prijs":null,"score":2,"opmerkingen":"Fris, ruikt naar witte perzik, niet te droog"},{"id":"266","naam":"2020 - Festivo Malbec","producent":"Monteviejo","soort":"Rood","land":"Argentinie","regio":"Mendoza","subregio":"Valle de Uco","druif":"Malbec","jaar":2020,"winkel":"Wijnpand","datum":"","prijs":null,"score":2,"opmerkingen":"zacht kruidig, soepel, niet te zoet"},{"id":"267","naam":"Paul Mas - Rosorange","producent":"Paul Mas","soort":"Rose","land":"Frankrijk","regio":"","subregio":"","druif":"","jaar":2022,"winkel":"Wijnpand","datum":"2023-06-30","prijs":null,"score":3,"opmerkingen":"anders gemaakt maar weinig verschil met Jean Claude Mas - Mon Rose"},{"id":"268","naam":"Grande reserve Les Bertholets GSM","producent":"Paul Albert","soort":"Rood","land":"Frankrijk","regio":"Cotes d'oc","subregio":"Saint Guilhem le desert","druif":"Grenache / Syrah / Mourvèdre","jaar":null,"winkel":"Wijnpand","datum":"","prijs":null,"score":3,"opmerkingen":"Medium body, weinig tanine, soepel kersen, geen hout, heerlijk!!"},{"id":"269","naam":"2021 - Dom Diogo Padeiro vinho verde","producent":"Quinta da Raza","soort":"Rose","land":"Portugal","regio":"Minho","subregio":"","druif":"Padeiro","jaar":2021,"winkel":"Wijnpand","datum":"","prijs":null,"score":1,"opmerkingen":"snoepjes rose, voor ons te zoet"},{"id":"270","naam":"Alie Ammiraglia - Frescobaldi","producent":"Frescobaldi","soort":"Rose","land":"Italie","regio":"","subregio":"","druif":"","jaar":null,"winkel":"????","datum":"","prijs":null,"score":3,"opmerkingen":"lekker maar waar gekocht?"},{"id":"271","naam":"Tarani - Gamay Rose special edition","producent":"Tarani","soort":"Rose","land":"Frankrijk","regio":"Comte Tolosan","subregio":"","druif":"Gamay","jaar":null,"winkel":"Wijnpand","datum":"","prijs":null,"score":2,"opmerkingen":"medium body, fris, fruitig, vettig/vol"},{"id":"272","naam":"2023 - Pontificus - Grenache, Syrah, Mourvedre","producent":"Badet Clément","soort":"Rood","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"","druif":"Grenache, Syrah, Mourvedre","jaar":2023,"winkel":"Wijnpand","datum":"2026-02-01","prijs":null,"score":3,"opmerkingen":"GSM, zacht van smaak"},{"id":"273","naam":"Zonin - Primitivo di Manduria","producent":"Zonin","soort":"Rood","land":"Italie","regio":"Zuid Italie - Puglia","subregio":"Primitivo di Manduria","druif":"Primitivo","jaar":null,"winkel":"Gall & Gall","datum":"2024-02-16","prijs":10.59,"score":3,"opmerkingen":"Zondoorstoofd, pruim/kers donker fruit, met mooie tanine en houtje"},{"id":"274","naam":"2023 - guidalberto - toscana- tenuta san guido","producent":"Tenuta San Guido","soort":"Rood","land":"Italie","regio":"","subregio":"","druif":"","jaar":2023,"winkel":"Okhuysen","datum":"","prijs":62.9,"score":5,"opmerkingen":"Bloemendaal coup de cour, echt top wijn!"},{"id":"275","naam":"2018 - Les blousons noir - Vinovalie","producent":"Vinovalie","soort":"Rood","land":"Frankrijk","regio":"Cahors","subregio":"","druif":"Malbec","jaar":2018,"winkel":"Wijnpand","datum":"","prijs":null,"score":0,"opmerkingen":"Vrij vlakke smaak, niet bijzonder voor een Malbec"},{"id":"276","naam":"Cape Coral 2021 Mourvedre by Waterkloof","producent":"Waterkloof","soort":"Rose","land":"Zuid Afrika","regio":"West kaap / kuststreek","subregio":"Stellenbosch","druif":"Mourvedre","jaar":2021,"winkel":"Wijnpand","datum":"","prijs":null,"score":2,"opmerkingen":"rose met meer structuur, medium body"},{"id":"277","naam":"2021 - Belles du Sud - Ciceron x Nach","producent":"Belles du Sud","soort":"Rose","land":"Frankrijk","regio":"Languedoc-Roussillon","subregio":"Languedoc","druif":"Grenache ","jaar":2021,"winkel":"Zuivelhoeve","datum":"","prijs":15.0,"score":1,"opmerkingen":"net te korte afdronk qua fruit"},{"id":"278","naam":"Winzer Krems Sandgrube 13 - Gruner Veltliner","producent":"Winzer Krems","soort":"Wit","land":"Oostenrijk","regio":"Kremstal","subregio":"","druif":"Grüner Veltliner","jaar":2021,"winkel":"Zuivelhoeve","datum":"","prijs":null,"score":1,"opmerkingen":"Gewone GV, prima, niet bijzonder"}];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let wines = JSON.parse(JSON.stringify(INITIAL_DATA));
+let filterSoort = 'all';
+let filterScore = 'all';
+let currentWijn = null;
+let formScore = 0;
+let driveFileId = null;
+const DRIVE_FILE_NAME = 'mijnwijn_data.json';
+
+// ─── GOOGLE DRIVE ────────────────────────────────────────────────────────────
+async function callDrive(path, opts = {}) {
+  const token = await getGoogleToken();
+  if (!token) return null;
+  const res = await fetch('https://www.googleapis.com/'+path, {
+    ...opts,
+    headers: { 'Authorization': 'Bearer '+token, ...(opts.headers||{}) }
+  });
+  if (!res.ok) return null;
+  return res;
+}
+
+async function getGoogleToken() {
+  try {
+    const authResult = await new Promise((res,rej) => {
+      if(typeof google === 'undefined') return rej('no gapi');
+      google.accounts.oauth2.initTokenClient({
+        client_id: '', // Placeholder — see setup below
+        scope: 'https://www.googleapis.com/auth/drive.file',
+        callback: r => r.error ? rej(r.error) : res(r.access_token)
+      }).requestAccessToken({prompt:''});
+    });
+    return authResult;
+  } catch { return null; }
+}
+
+async function syncDrive() {
+  setDriveStatus('syncing', 'Synchroniseren...');
+  try {
+    // Zoek bestand
+    const searchRes = await callDrive(`drive/v3/files?q=name='${DRIVE_FILE_NAME}'+and+trashed=false&fields=files(id,name,modifiedTime)`);
+    if (!searchRes) { setDriveStatus('error','Geen toegang tot Drive'); return; }
+    const found = (await searchRes.json()).files;
+    
+    if (found.length > 0) {
+      driveFileId = found[0].id;
+      const dlRes = await callDrive(`drive/v3/files/${driveFileId}?alt=media`);
+      if (dlRes) {
+        const remoteData = await dlRes.json();
+        wines = remoteData;
+        renderList(); renderStats();
+        setDriveStatus('ok', `Gesynchroniseerd (${wines.length} wijnen)`);
+        showToast('✓ Data geladen vanuit Google Drive');
+        return;
+      }
+    }
+    // Upload huidige data
+    await uploadToDrive();
+  } catch(e) {
+    setDriveStatus('error','Sync mislukt');
+  }
+}
+
+async function uploadToDrive() {
+  const json = JSON.stringify(wines);
+  const metadata = JSON.stringify({ name: DRIVE_FILE_NAME, mimeType: 'application/json' });
+  const boundary = 'wijn_boundary_xyz';
+  const body = `--${boundary}\r\nContent-Type: application/json\r\n\r\n${metadata}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${json}\r\n--${boundary}--`;
+  
+  const method = driveFileId ? 'PATCH' : 'POST';
+  const url = driveFileId 
+    ? `upload/drive/v3/files/${driveFileId}?uploadType=multipart`
+    : `upload/drive/v3/files?uploadType=multipart`;
+
+  const res = await callDrive(url, {
+    method,
+    headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+    body
+  });
+  if (res) {
+    const f = await res.json();
+    driveFileId = f.id;
+    setDriveStatus('ok', `Opgeslagen in Drive (${wines.length} wijnen)`);
+    showToast('✓ Opgeslagen in Google Drive');
+  } else {
+    setDriveStatus('error', 'Opslaan mislukt');
+  }
+}
+
+function setDriveStatus(state, msg) {
+  const el = document.getElementById('driveStatus');
+  const lbl = document.getElementById('driveLabel');
+  el.className = 'gdrive-status' + (state !== 'ok' ? ' '+state : '');
+  lbl.textContent = msg;
+}
+
+// ─── RENDER LIST ─────────────────────────────────────────────────────────────
+function starsStr(n, unicode=false) {
+  if(!n) return unicode ? '—' : '<span class="stars empty">☆☆☆☆☆</span>';
+  const filled = '★'.repeat(n);
+  const empty = '☆'.repeat(5-n);
+  return `<span class="stars">${filled}</span><span class="stars empty">${empty}</span>`;
+}
+
+function renderList() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const sort = document.getElementById('sortSelect').value;
+  
+  let list = wines.filter(w => {
+    // soort filter
+    if (filterSoort !== 'all' && w.soort !== filterSoort) return false;
+    // score filter
+    if (filterScore === '0') return !w.score;
+    if (filterScore === '5') return w.score === 5;
+    if (filterScore === '4+') return w.score >= 4;
+    if (filterScore === '3+') return w.score >= 3;
+    if (filterScore === '1') return w.score === 1;
+    return true;
+  });
+  
+  if (q) list = list.filter(w => 
+    (w.naam||'').toLowerCase().includes(q) ||
+    (w.producent||'').toLowerCase().includes(q) ||
+    (w.druif||'').toLowerCase().includes(q) ||
+    (w.land||'').toLowerCase().includes(q) ||
+    (w.regio||'').toLowerCase().includes(q) ||
+    (w.winkel||'').toLowerCase().includes(q)
+  );
+  
+  list.sort((a,b) => {
+    if (sort === 'score_desc') return (b.score||0)-(a.score||0);
+    if (sort === 'score_asc') return (a.score||0)-(b.score||0);
+    if (sort === 'naam') return (a.naam||'').localeCompare(b.naam||'');
+    if (sort === 'prijs_asc') return (a.prijs||999)-(b.prijs||999);
+    if (sort === 'datum_desc') return (b.datum||'').localeCompare(a.datum||'');
+    if (sort === 'datum_asc') return (a.datum||'').localeCompare(b.datum||'');
+    return 0;
+  });
+  
+  document.getElementById('countBadge').textContent = `${list.length} wijnen`;
+  
+  const container = document.getElementById('wineList');
+  if (list.length === 0) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">🍷</div><div>Geen wijnen gevonden</div></div>';
+    return;
+  }
+  
+  container.innerHTML = list.map(w => {
+    const dotClass = w.soort === 'Wit' ? 'dot-wit' : w.soort === 'Rose' ? 'dot-rose' : 'dot-rood';
+    const tagClass = w.soort === 'Wit' ? 'tag-wit' : w.soort === 'Rose' ? 'tag-rose' : 'tag-rood';
+    const soortLabel = w.soort === 'Rose' ? 'Rosé' : w.soort;
+    return `<div class="wine-card" onclick="openDetail('${w.id}')">
+      <div class="wine-dot ${dotClass}"></div>
+      <div class="wine-info">
+        <div class="wine-name">${w.naam}</div>
+        <div class="wine-sub">
+          <span>${w.land||'—'}</span>
+          ${w.jaar ? `<span>· ${w.jaar}</span>` : ''}
+          ${w.druif ? `<span>· ${w.druif.split(',')[0].trim()}</span>` : ''}
+        </div>
+      </div>
+      <div class="wine-right">
+        ${starsStr(w.score)}
+        ${w.prijs ? `<div class="wine-price">€ ${w.prijs.toFixed(2)}</div>` : ''}
+        <span class="wine-tag ${tagClass}">${soortLabel}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setFilterGroup(group, val, el) {
+  if (group === 'soort') filterSoort = val;
+  if (group === 'score') filterScore = val;
+  document.querySelectorAll(`[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+// ─── DETAIL MODAL ────────────────────────────────────────────────────────────
+function openDetail(id) {
+  currentWijn = wines.find(w => w.id === id);
+  if (!currentWijn) return;
+  const w = currentWijn;
+  document.getElementById('m-naam').textContent = w.naam;
+  document.getElementById('m-stars').innerHTML = w.score ? '★'.repeat(w.score) + '☆'.repeat(5-w.score) : '☆☆☆☆☆ (niet gescoord)';
+  document.getElementById('m-producent').textContent = w.producent || '—';
+  document.getElementById('m-soort').textContent = w.soort === 'Rose' ? 'Rosé' : (w.soort || '—');
+  document.getElementById('m-land').textContent = w.land || '—';
+  document.getElementById('m-jaar').textContent = w.jaar || '—';
+  document.getElementById('m-regio').textContent = [w.regio, w.subregio].filter(Boolean).join(' › ') || '—';
+  document.getElementById('m-druif').textContent = w.druif || '—';
+  document.getElementById('m-winkel').textContent = w.winkel || '—';
+  document.getElementById('m-datum').textContent = [w.datum ? '📅 '+w.datum : '', w.prijs ? '€'+w.prijs.toFixed(2) : ''].filter(Boolean).join('   ') || '—';
+  const opWrap = document.getElementById('m-opmerking-wrap');
+  opWrap.style.display = w.opmerkingen ? '' : 'none';
+  document.getElementById('m-opmerking').textContent = w.opmerkingen;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function closeDetail(e) { if(e.target === document.getElementById('detailModal')) closeDetailBtn(); }
+function closeDetailBtn() { document.getElementById('detailModal').classList.remove('open'); }
+
+function editWijn() {
+  closeDetailBtn();
+  openEditForm(currentWijn);
+}
+
+function deleteWijn() {
+  if (!confirm(`"${currentWijn.naam}" verwijderen?`)) return;
+  wines = wines.filter(w => w.id !== currentWijn.id);
+  closeDetailBtn();
+  renderList(); renderStats();
+  saveLocal();
+  showToast('🗑 Wijn verwijderd');
+}
+
+// ─── FORM ─────────────────────────────────────────────────────────────────────
+function openAddForm() {
+  document.getElementById('formTitle').textContent = 'Wijn toevoegen';
+  document.getElementById('f-id').value = '';
+  document.getElementById('f-naam').value = '';
+  document.getElementById('f-producent').value = '';
+  document.getElementById('f-jaar').value = '';
+  document.getElementById('f-soort').value = 'Rood';
+  document.getElementById('f-land').value = '';
+  document.getElementById('f-regio').value = '';
+  document.getElementById('f-subregio').value = '';
+  document.getElementById('f-druif').value = '';
+  document.getElementById('f-winkel').value = '';
+  document.getElementById('f-prijs').value = '';
+  document.getElementById('f-datum').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f-opmerking').value = '';
+  formScore = 0;
+  updateStars(0);
+  document.getElementById('formOverlay').classList.add('open');
+}
+
+function openEditForm(w) {
+  document.getElementById('formTitle').textContent = 'Wijn bewerken';
+  document.getElementById('f-id').value = w.id;
+  document.getElementById('f-naam').value = w.naam || '';
+  document.getElementById('f-producent').value = w.producent || '';
+  document.getElementById('f-jaar').value = w.jaar || '';
+  document.getElementById('f-soort').value = w.soort || 'Rood';
+  document.getElementById('f-land').value = w.land || '';
+  document.getElementById('f-regio').value = w.regio || '';
+  document.getElementById('f-subregio').value = w.subregio || '';
+  document.getElementById('f-druif').value = w.druif || '';
+  document.getElementById('f-winkel').value = w.winkel || '';
+  document.getElementById('f-prijs').value = w.prijs || '';
+  document.getElementById('f-datum').value = w.datum || '';
+  document.getElementById('f-opmerking').value = w.opmerkingen || '';
+  formScore = w.score || 0;
+  updateStars(formScore);
+  document.getElementById('formOverlay').classList.add('open');
+}
+
+function closeFormOverlay(e) { if(e.target === document.getElementById('formOverlay')) closeForm(); }
+function closeForm() { document.getElementById('formOverlay').classList.remove('open'); }
+
+function setStar(n) { formScore = n; updateStars(n); }
+
+function updateStars(n) {
+  document.querySelectorAll('.star-btn').forEach((btn, i) => {
+    btn.classList.toggle('lit', i > 0 && i <= n);
+  });
+}
+
+function saveWijn() {
+  const naam = document.getElementById('f-naam').value.trim();
+  if (!naam) { alert('Wijnnaam is verplicht'); return; }
+  
+  const id = document.getElementById('f-id').value;
+  const wijn = {
+    id: id || String(Date.now()),
+    naam,
+    producent: document.getElementById('f-producent').value.trim(),
+    jaar: parseInt(document.getElementById('f-jaar').value) || null,
+    soort: document.getElementById('f-soort').value,
+    land: document.getElementById('f-land').value,
+    regio: document.getElementById('f-regio').value.trim(),
+    subregio: document.getElementById('f-subregio').value.trim(),
+    druif: document.getElementById('f-druif').value.trim(),
+    winkel: document.getElementById('f-winkel').value.trim(),
+    prijs: parseFloat(document.getElementById('f-prijs').value) || null,
+    datum: document.getElementById('f-datum').value,
+    score: formScore,
+    opmerkingen: document.getElementById('f-opmerking').value.trim(),
+  };
+  
+  if (id) {
+    const idx = wines.findIndex(w => w.id === id);
+    if (idx >= 0) wines[idx] = wijn;
+  } else {
+    wines.unshift(wijn);
+  }
+  
+  closeForm();
+  renderList(); renderStats();
+  saveLocal();
+  showToast(id ? '✓ Wijn bijgewerkt' : '✓ Wijn toegevoegd');
+}
+
+// ─── STATS ────────────────────────────────────────────────────────────────────
+function renderStats() {
+  const scored = wines.filter(w => w.score > 0);
+  const avg = scored.length ? (scored.reduce((s,w) => s+w.score, 0)/scored.length).toFixed(1) : '—';
+  document.getElementById('s-total').textContent = wines.length;
+  document.getElementById('s-avg').textContent = avg;
+  document.getElementById('s-5star').textContent = wines.filter(w=>w.score===5).length;
+
+  const count = (arr, key) => {
+    const m = {};
+    arr.forEach(w => { const v = w[key]; if(v) m[v]=(m[v]||0)+1; });
+    return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  };
+  
+  const renderBar = (entries, max=8) => entries.slice(0,max).map(([k,v])=>`
+    <div class="stat-row">
+      <span style="min-width:100px;font-size:12px">${k}</span>
+      <div class="stat-bar-wrap"><div class="stat-bar" style="width:${Math.round(v/entries[0][1]*100)}%"></div></div>
+      <span style="font-size:12px;min-width:28px;text-align:right">${v}</span>
+    </div>`).join('');
+  
+  document.getElementById('s-landen').innerHTML = renderBar(count(wines,'land'));
+  
+  const soorten = count(wines,'soort');
+  document.getElementById('s-soort').innerHTML = soorten.map(([k,v])=>`
+    <div class="stat-row">
+      <span style="min-width:60px;font-size:12px">${k==='Rose'?'Rosé':k}</span>
+      <div class="stat-bar-wrap"><div class="stat-bar" style="width:${Math.round(v/wines.length*100)}%;background:${k==='Wit'?'#4a90d9':k==='Rose'?'#e8849a':'#c4425f'}"></div></div>
+      <span style="font-size:12px">${v} (${Math.round(v/wines.length*100)}%)</span>
+    </div>`).join('');
+  
+  document.getElementById('s-winkels').innerHTML = renderBar(count(wines,'winkel'));
+  
+  const top5 = wines.filter(w=>w.score===5);
+  document.getElementById('s-topwijnen').innerHTML = top5.length 
+    ? top5.map(w=>`<div class="stat-row" style="cursor:pointer" onclick="openDetail('${w.id}')"><span style="font-size:13px">${w.naam}</span><span style="font-size:11px;color:var(--text-muted)">${w.land}</span></div>`).join('')
+    : '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">Nog geen 5-sterren wijnen</div>';
+}
+
+// ─── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='list')||(i===1&&tab==='stats')));
+  document.getElementById('listView').classList.toggle('hidden', tab !== 'list');
+  document.getElementById('statsView').classList.toggle('active', tab === 'stats');
+  document.querySelector('.fab').style.display = tab === 'list' ? '' : 'none';
+}
+
+// ─── EXPORT ───────────────────────────────────────────────────────────────────
+function exportCSV() {
+  const headers = ['naam','producent','soort','land','regio','subregio','druif','jaar','winkel','datum','prijs','score','opmerkingen'];
+  const rows = wines.map(w => headers.map(h => {
+    const v = w[h] ?? '';
+    return `"${String(v).replace(/"/g,'""')}"`;
+  }).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'MijnWijn_export.csv';
+  a.click();
+  showToast('↓ CSV gedownload');
+}
+
+// ─── LOCAL SAVE ──────────────────────────────────────────────────────────────
+function saveLocal() {
+  // Auto-upload to Drive if connected
+  if (driveFileId) uploadToDrive();
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  setTimeout(() => t.className = 'toast', 2800);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderList();
+renderStats();
+setDriveStatus('error', 'Klik ☁ om te synchroniseren met Google Drive');
+</script>
+</body>
+</html>
