@@ -16,11 +16,13 @@ const CONFIG = {
 /* ── STATE ───────────────────────────────────────────────────── */
 let wines        = [];          // Actieve wijnlijst
 let accessToken  = null;        // Google OAuth token
+let tokenExpiry  = null;        // Tijdstip waarop token verloopt
 let driveFileId  = null;        // ID van het Drive bestand
 let currentWijn  = null;        // Geselecteerde wijn (detail modal)
 let formScore    = 0;           // Score in het formulier
 let fSoort       = 'all';       // Actieve soortfilter
 let fScores      = new Set();   // Actieve scorefilters (meerkeuze)
+let tokenClient  = null;        // Herbruikbare token client
 
 
 /* ══════════════════════════════════════════════════════════════
@@ -32,35 +34,58 @@ let fScores      = new Set();   // Actieve scorefilters (meerkeuze)
  * zodra de gebruiker succesvol inlogt.
  */
 function handleCredentialResponse(response) {
-  // Decodeer het JWT token om naam/email te lezen
   const payload = JSON.parse(atob(response.credential.split('.')[1]));
   document.getElementById('userName').textContent = payload.given_name || payload.email;
-
-  // Toon de app, verberg het loginscherm
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = '';
-
-  // Haal een access token op voor Google Drive
   requestDriveToken();
 }
 
 /**
- * Vraag een OAuth access token aan voor Drive-toegang.
+ * Maak één herbruikbare token client aan en vraag direct een token op.
+ * Wordt ook aangeroepen als het token is verlopen.
  */
-function requestDriveToken() {
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: CONFIG.CLIENT_ID,
-    scope:     CONFIG.DRIVE_SCOPE,
-    callback:  (tokenResponse) => {
-      if (tokenResponse.error) {
-        setDrive('err', 'Drive toegang geweigerd');
-        return;
-      }
+function requestDriveToken(callback) {
+  if (!tokenClient) {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CONFIG.CLIENT_ID,
+      scope:     CONFIG.DRIVE_SCOPE,
+      callback:  (tokenResponse) => {
+        if (tokenResponse.error) {
+          setDrive('err', 'Drive toegang geweigerd');
+          return;
+        }
+        accessToken = tokenResponse.access_token;
+        // Token is 1 uur geldig — zet timer op 55 minuten
+        tokenExpiry = Date.now() + 55 * 60 * 1000;
+        if (callback) callback();
+        else initApp();
+      },
+    });
+  }
+  tokenClient.requestAccessToken({ prompt: '' });
+}
+
+/**
+ * Geeft een geldig access token terug.
+ * Vernieuwt automatisch als het token bijna verlopen is.
+ */
+async function getValidToken() {
+  if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
+    return accessToken; // Token nog geldig
+  }
+  // Token verlopen — stil vernieuwen (geen popup)
+  return new Promise((resolve) => {
+    if (!tokenClient) { resolve(null); return; }
+    const origCallback = tokenClient.callback;
+    tokenClient.callback = (tokenResponse) => {
+      if (tokenResponse.error) { resolve(null); return; }
       accessToken = tokenResponse.access_token;
-      initApp();
-    },
+      tokenExpiry = Date.now() + 55 * 60 * 1000;
+      resolve(accessToken);
+    };
+    tokenClient.requestAccessToken({ prompt: '' });
   });
-  client.requestAccessToken({ prompt: '' });
 }
 
 /**
@@ -81,17 +106,20 @@ function signOut() {
 
 /**
  * Initialiseer de Google Sign-In knop zodra de pagina geladen is.
+ * Probeer ook automatisch in te loggen als de gebruiker al eerder inlogde.
  */
 window.addEventListener('load', () => {
   google.accounts.id.initialize({
-    client_id: CONFIG.CLIENT_ID,
-    callback:  handleCredentialResponse,
-    auto_select: false,
+    client_id:   CONFIG.CLIENT_ID,
+    callback:    handleCredentialResponse,
+    auto_select: true,  // Automatisch inloggen als sessie nog actief is
   });
   google.accounts.id.renderButton(
     document.getElementById('googleSignInBtn'),
     { theme: 'filled_black', size: 'large', text: 'signin_with_google', locale: 'nl' }
   );
+  // Probeer One Tap automatisch te tonen
+  google.accounts.id.prompt();
 });
 
 
@@ -101,13 +129,15 @@ window.addEventListener('load', () => {
 
 /**
  * Stuur een verzoek naar de Google Drive API.
+ * Vernieuwt automatisch het token als dat nodig is.
  */
 async function driveReq(path, opts = {}) {
-  if (!accessToken) return null;
+  const token = await getValidToken();
+  if (!token) return null;
   const res = await fetch('https://www.googleapis.com/' + path, {
     ...opts,
     headers: {
-      'Authorization': 'Bearer ' + accessToken,
+      'Authorization': 'Bearer ' + token,
       ...(opts.headers || {}),
     },
   });
@@ -196,10 +226,13 @@ async function uploadDrive() {
 }
 
 /**
- * Sla op na elke wijziging (als Drive verbonden is).
+ * Sla automatisch op na elke wijziging.
+ * Geeft kort feedback in de statusbalk.
  */
-function autoSave() {
-  if (driveFileId) uploadDrive();
+async function autoSave() {
+  if (!driveFileId && !accessToken) return;
+  setDrive('busy', 'Opslaan…');
+  await uploadDrive();
 }
 
 
