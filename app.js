@@ -583,8 +583,8 @@ function renderStats() {
     entries.slice(0, max).map(([k, avg, n]) =>
       `<div class="srow">
         <span style="min-width:${minWidth};font-size:13px">${escH(k)}</span>
-        <div class="sbar-wrap"><div class="sbar" style="width:${Math.round(avg / 5 * 100)}%;background:var(--gold)"></div></div>
-        <span style="font-size:12px;color:var(--gold);min-width:40px;text-align:right">${'★'.repeat(Math.round(avg))} <span style="color:var(--muted);font-size:11px">(${n})</span></span>
+        <div class="sbar-wrap"><div class="sbar" style="width:${Math.round(avg / 5 * 100)}%;background:#fbbc04"></div></div>
+        <span style="font-size:12px;color:#fbbc04;min-width:40px;text-align:right">${'★'.repeat(Math.round(avg))} <span style="color:var(--muted);font-size:11px">(${n})</span></span>
       </div>`
     ).join('');
 
@@ -611,7 +611,7 @@ function renderStats() {
       <span style="min-width:110px;font-size:13px">${escH(k)}</span>
       <div class="sbar-wrap"><div class="sbar" style="width:${Math.round(v / landenCount[0][1] * 100)}%"></div></div>
       <span class="sval">${v}</span>
-      ${a ? `<span style="font-size:11px;color:var(--gold);min-width:36px;text-align:right">⌀${a}★</span>` : '<span style="min-width:36px"></span>'}
+      ${a ? `<span style="font-size:11px;color:#fbbc04;min-width:36px;text-align:right">⌀${a}★</span>` : '<span style="min-width:36px"></span>'}
     </div>`;
   }).join('');
 
@@ -682,7 +682,7 @@ function renderStats() {
     `<div class="srow" style="cursor:pointer" onclick="openDetail('${w.id}')">
       <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(w.naam)}</span>
       <span style="font-size:11px;color:var(--muted);margin-left:6px;flex-shrink:0">€${w.prijs.toFixed(2)}</span>
-      <span style="font-size:11px;color:var(--gold);margin-left:6px;flex-shrink:0">${'★'.repeat(w.score)}</span>
+      <span style="font-size:11px;color:#fbbc04;margin-left:6px;flex-shrink:0">${'★'.repeat(w.score)}</span>
     </div>`
   ).join('') || '<div style="color:var(--muted);font-size:13px;padding:6px 0">Onvoldoende data met prijs én score</div>';
 
@@ -693,8 +693,8 @@ function renderStats() {
   }).filter(([,n]) => n > 0);
   document.getElementById('s-scoredist').innerHTML = scoreDist.map(([k, v]) =>
     `<div class="srow">
-      <span style="min-width:110px;font-size:13px;color:var(--gold)">${k}</span>
-      <div class="sbar-wrap"><div class="sbar" style="width:${Math.round(v / wines.length * 100)}%;background:var(--gold)"></div></div>
+      <span style="min-width:110px;font-size:13px;color:#fbbc04">${k}</span>
+      <div class="sbar-wrap"><div class="sbar" style="width:${Math.round(v / wines.length * 100)}%;background:#fbbc04"></div></div>
       <span class="sval">${v}</span>
     </div>`
   ).join('');
