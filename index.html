@@ -111,15 +111,75 @@
 
     <!-- ── STATISTIEKEN VIEW ───────────────────────────────────── -->
     <div class="sview" id="statsView">
+
+      <!-- Samenvatting -->
       <div class="sgrid3">
         <div class="scard" style="text-align:center"><div class="snum" id="s-tot">0</div><div class="slabel">Wijnen</div></div>
         <div class="scard" style="text-align:center"><div class="snum" id="s-avg">—</div><div class="slabel">Gem. score</div></div>
         <div class="scard" style="text-align:center"><div class="snum" id="s-5star">0</div><div class="slabel">★★★★★</div></div>
       </div>
-      <div class="scard"><div class="scard-title">Top landen</div><div id="s-landen"></div></div>
-      <div class="scard"><div class="scard-title">Soort verdeling</div><div id="s-soort"></div></div>
-      <div class="scard"><div class="scard-title">Top winkels</div><div id="s-winkels"></div></div>
-      <div class="scard"><div class="scard-title">5-sterren wijnen</div><div id="s-top5"></div></div>
+      <div id="s-extra"></div>
+
+      <!-- Score verdeling -->
+      <div class="scard">
+        <div class="scard-title">📊 Score verdeling</div>
+        <div id="s-scoredist"></div>
+      </div>
+
+      <!-- Soort -->
+      <div class="scard">
+        <div class="scard-title">🍷 Soort verdeling</div>
+        <div id="s-soort"></div>
+      </div>
+
+      <!-- Landen -->
+      <div class="scard">
+        <div class="scard-title">🌍 Top landen — aantal wijnen</div>
+        <div id="s-landen"></div>
+      </div>
+      <div class="scard">
+        <div class="scard-title">🌍 Top landen — gemiddelde score <span style="font-size:11px;color:var(--muted)">(min. 2 wijnen)</span></div>
+        <div id="s-landen-score"></div>
+      </div>
+
+      <!-- Regio's -->
+      <div class="scard">
+        <div class="scard-title">📍 Top regio's — aantal wijnen</div>
+        <div id="s-regio"></div>
+      </div>
+      <div class="scard">
+        <div class="scard-title">📍 Top regio's — gemiddelde score <span style="font-size:11px;color:var(--muted)">(min. 2 wijnen)</span></div>
+        <div id="s-regio-score"></div>
+      </div>
+
+      <!-- Druiven -->
+      <div class="scard">
+        <div class="scard-title">🍇 Top druiven — aantal wijnen</div>
+        <div id="s-druif"></div>
+      </div>
+      <div class="scard">
+        <div class="scard-title">🍇 Top druiven — gemiddelde score <span style="font-size:11px;color:var(--muted)">(min. 2 wijnen)</span></div>
+        <div id="s-druif-score"></div>
+      </div>
+
+      <!-- Prijs-kwaliteit -->
+      <div class="scard">
+        <div class="scard-title">💰 Beste prijs-kwaliteit <span style="font-size:11px;color:var(--muted)">(score ÷ prijs)</span></div>
+        <div id="s-pk"></div>
+      </div>
+
+      <!-- 5-sterren -->
+      <div class="scard">
+        <div class="scard-title">⭐ 5-sterren wijnen</div>
+        <div id="s-top5"></div>
+      </div>
+
+      <!-- Winkels -->
+      <div class="scard">
+        <div class="scard-title">🏪 Top winkels</div>
+        <div id="s-winkels"></div>
+      </div>
+
     </div>
 
     <!-- FAB -->
