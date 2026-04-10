@@ -479,57 +479,206 @@ function saveWijn() {
 
 function renderStats() {
   const scored = wines.filter(w => w.score > 0);
-  const avg    = scored.length
+  const withPrice = wines.filter(w => w.prijs > 0);
+
+  // ── Samenvattingskaartjes bovenaan ──────────────────────────
+  const avg = scored.length
     ? (scored.reduce((s, w) => s + w.score, 0) / scored.length).toFixed(1)
     : '—';
+  const avgPrijs = withPrice.length
+    ? (withPrice.reduce((s, w) => s + w.prijs, 0) / withPrice.length).toFixed(2)
+    : null;
+  const beste_pk = withPrice.filter(w => w.score >= 4)
+    .sort((a, b) => (b.score / b.prijs) - (a.score / a.prijs))[0];
 
   document.getElementById('s-tot').textContent   = wines.length;
   document.getElementById('s-avg').textContent   = avg;
   document.getElementById('s-5star').textContent = wines.filter(w => w.score === 5).length;
 
-  // Hulpfunctie: tel unieke waarden
+  // Extra samenvattingskaartjes
+  document.getElementById('s-extra').innerHTML = `
+    <div class="sgrid3" style="margin-bottom:0">
+      <div class="scard" style="text-align:center;margin-bottom:0">
+        <div class="snum">${scored.length}</div>
+        <div class="slabel">Gescoord</div>
+      </div>
+      <div class="scard" style="text-align:center;margin-bottom:0">
+        <div class="snum">${avgPrijs ? '€'+avgPrijs : '—'}</div>
+        <div class="slabel">Gem. prijs</div>
+      </div>
+      <div class="scard" style="text-align:center;margin-bottom:0">
+        <div class="snum">${[...new Set(wines.map(w=>w.land).filter(Boolean))].length}</div>
+        <div class="slabel">Landen</div>
+      </div>
+    </div>`;
+
+  // ── Hulpfuncties ─────────────────────────────────────────────
+
+  // Tel aantal per waarde
   const count = key => {
     const m = {};
     wines.forEach(w => { if (w[key]) m[w[key]] = (m[w[key]] || 0) + 1; });
     return Object.entries(m).sort((a, b) => b[1] - a[1]);
   };
 
-  // Balk-HTML genereren
-  const bar = (entries, max = 10) => entries.slice(0, max).map(([k, v]) =>
-    `<div class="srow">
-      <span style="min-width:90px;font-size:11px">${escH(k)}</span>
-      <div class="sbar-wrap"><div class="sbar" style="width:${Math.round(v / entries[0][1] * 100)}%"></div></div>
-      <span class="sval">${v}</span>
-    </div>`
-  ).join('');
+  // Gemiddelde score per waarde
+  const avgScore = key => {
+    const m = {};
+    wines.filter(w => w.score > 0 && w[key]).forEach(w => {
+      if (!m[w[key]]) m[w[key]] = { sum: 0, n: 0 };
+      m[w[key]].sum += w.score;
+      m[w[key]].n++;
+    });
+    return Object.entries(m)
+      .filter(([, v]) => v.n >= 2)
+      .map(([k, v]) => [k, +(v.sum / v.n).toFixed(1), v.n])
+      .sort((a, b) => b[1] - a[1]);
+  };
 
-  document.getElementById('s-landen').innerHTML  = bar(count('land'));
-  document.getElementById('s-winkels').innerHTML = bar(count('winkel'));
+  // Balk met aantal
+  const bar = (entries, max = 10, minWidth = '110px') =>
+    entries.slice(0, max).map(([k, v]) =>
+      `<div class="srow">
+        <span style="min-width:${minWidth};font-size:13px">${escH(k)}</span>
+        <div class="sbar-wrap"><div class="sbar" style="width:${Math.round(v / entries[0][1] * 100)}%"></div></div>
+        <span class="sval">${v}</span>
+      </div>`
+    ).join('');
 
-  // Soort met eigen kleur
+  // Balk met gemiddelde score (sterren)
+  const barScore = (entries, max = 10, minWidth = '110px') =>
+    entries.slice(0, max).map(([k, avg, n]) =>
+      `<div class="srow">
+        <span style="min-width:${minWidth};font-size:13px">${escH(k)}</span>
+        <div class="sbar-wrap"><div class="sbar" style="width:${Math.round(avg / 5 * 100)}%;background:var(--gold)"></div></div>
+        <span style="font-size:12px;color:var(--gold);min-width:40px;text-align:right">${'★'.repeat(Math.round(avg))} <span style="color:var(--muted);font-size:11px">(${n})</span></span>
+      </div>`
+    ).join('');
+
+  // ── Soort verdeling ──────────────────────────────────────────
   const soorten = count('soort');
   document.getElementById('s-soort').innerHTML = soorten.map(([k, v]) =>
     `<div class="srow">
-      <span style="min-width:60px;font-size:11px">${k === 'Rose' ? 'Rosé' : k}</span>
+      <span style="min-width:60px;font-size:13px">${k === 'Rose' ? 'Rosé' : k}</span>
       <div class="sbar-wrap">
         <div class="sbar" style="width:${Math.round(v / wines.length * 100)}%;background:${
           k === 'Wit' ? 'var(--wit-c)' : k === 'Rose' ? 'var(--rose-c)' : 'var(--rood-c)'
         }"></div>
       </div>
+      <span class="sval">${v} <span style="color:var(--muted);font-size:11px">(${Math.round(v/wines.length*100)}%)</span></span>
+    </div>`
+  ).join('');
+
+  // ── Top landen (aantal + gem. score) ────────────────────────
+  const landenCount = count('land');
+  const landenAvg   = Object.fromEntries(avgScore('land').map(([k, a]) => [k, a]));
+  document.getElementById('s-landen').innerHTML = landenCount.slice(0, 12).map(([k, v]) => {
+    const a = landenAvg[k];
+    return `<div class="srow">
+      <span style="min-width:110px;font-size:13px">${escH(k)}</span>
+      <div class="sbar-wrap"><div class="sbar" style="width:${Math.round(v / landenCount[0][1] * 100)}%"></div></div>
+      <span class="sval">${v}</span>
+      ${a ? `<span style="font-size:11px;color:var(--gold);min-width:36px;text-align:right">⌀${a}★</span>` : '<span style="min-width:36px"></span>'}
+    </div>`;
+  }).join('');
+
+  // ── Beste landen op score ────────────────────────────────────
+  document.getElementById('s-landen-score').innerHTML = barScore(avgScore('land'), 10);
+
+  // ── Top regio's ──────────────────────────────────────────────
+  // Normaliseer regio's (trim spaties)
+  const regioMap = {};
+  wines.forEach(w => {
+    const r = (w.regio || '').trim();
+    if (r) regioMap[r] = (regioMap[r] || 0) + 1;
+  });
+  const regioEntries = Object.entries(regioMap).sort((a,b) => b[1]-a[1]);
+  document.getElementById('s-regio').innerHTML = bar(regioEntries, 12);
+
+  // ── Beste regio's op score ───────────────────────────────────
+  // Tijdelijk regio normaliseren voor avgScore
+  const winesNormRegio = wines.map(w => ({...w, regio: (w.regio||'').trim()}));
+  const regioAvgMap = {};
+  winesNormRegio.filter(w => w.score > 0 && w.regio).forEach(w => {
+    if (!regioAvgMap[w.regio]) regioAvgMap[w.regio] = { sum: 0, n: 0 };
+    regioAvgMap[w.regio].sum += w.score;
+    regioAvgMap[w.regio].n++;
+  });
+  const regioAvgEntries = Object.entries(regioAvgMap)
+    .filter(([, v]) => v.n >= 2)
+    .map(([k, v]) => [k, +(v.sum / v.n).toFixed(1), v.n])
+    .sort((a, b) => b[1] - a[1]);
+  document.getElementById('s-regio-score').innerHTML = barScore(regioAvgEntries, 10);
+
+  // ── Top druiven ──────────────────────────────────────────────
+  // Splits druivennamen (komma-gescheiden) en normaliseer
+  const druifMap = {};
+  wines.forEach(w => {
+    if (!w.druif) return;
+    w.druif.split(/[,\/]/).forEach(d => {
+      const clean = d.trim().replace(/\s*\(.*?\)/g, '').trim();
+      if (clean.length > 2) druifMap[clean] = (druifMap[clean] || 0) + 1;
+    });
+  });
+  const druifEntries = Object.entries(druifMap).sort((a,b) => b[1]-a[1]);
+  document.getElementById('s-druif').innerHTML = bar(druifEntries, 12, '140px');
+
+  // ── Beste druiven op score ───────────────────────────────────
+  const druifAvgMap = {};
+  wines.filter(w => w.score > 0 && w.druif).forEach(w => {
+    w.druif.split(/[,\/]/).forEach(d => {
+      const clean = d.trim().replace(/\s*\(.*?\)/g, '').trim();
+      if (clean.length > 2) {
+        if (!druifAvgMap[clean]) druifAvgMap[clean] = { sum: 0, n: 0 };
+        druifAvgMap[clean].sum += w.score;
+        druifAvgMap[clean].n++;
+      }
+    });
+  });
+  const druifAvgEntries = Object.entries(druifAvgMap)
+    .filter(([, v]) => v.n >= 2)
+    .map(([k, v]) => [k, +(v.sum / v.n).toFixed(1), v.n])
+    .sort((a, b) => b[1] - a[1]);
+  document.getElementById('s-druif-score').innerHTML = barScore(druifAvgEntries, 10, '140px');
+
+  // ── Prijs-kwaliteit analyse ──────────────────────────────────
+  const pkWijnen = withPrice.filter(w => w.score > 0)
+    .map(w => ({ ...w, pk: w.score / w.prijs }))
+    .sort((a, b) => b.pk - a.pk);
+  document.getElementById('s-pk').innerHTML = pkWijnen.slice(0, 8).map(w =>
+    `<div class="srow" style="cursor:pointer" onclick="openDetail('${w.id}')">
+      <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(w.naam)}</span>
+      <span style="font-size:11px;color:var(--muted);margin-left:6px;flex-shrink:0">€${w.prijs.toFixed(2)}</span>
+      <span style="font-size:11px;color:var(--gold);margin-left:6px;flex-shrink:0">${'★'.repeat(w.score)}</span>
+    </div>`
+  ).join('') || '<div style="color:var(--muted);font-size:13px;padding:6px 0">Onvoldoende data met prijs én score</div>';
+
+  // ── Score verdeling ──────────────────────────────────────────
+  const scoreDist = [5,4,3,2,1,0].map(s => {
+    const n = wines.filter(w => w.score === s).length;
+    return [s === 0 ? 'Niet gescoord' : '★'.repeat(s), n];
+  }).filter(([,n]) => n > 0);
+  document.getElementById('s-scoredist').innerHTML = scoreDist.map(([k, v]) =>
+    `<div class="srow">
+      <span style="min-width:110px;font-size:13px;color:var(--gold)">${k}</span>
+      <div class="sbar-wrap"><div class="sbar" style="width:${Math.round(v / wines.length * 100)}%;background:var(--gold)"></div></div>
       <span class="sval">${v}</span>
     </div>`
   ).join('');
 
-  // 5-sterren wijnen
+  // ── 5-sterren wijnen ─────────────────────────────────────────
   const top5 = wines.filter(w => w.score === 5);
   document.getElementById('s-top5').innerHTML = top5.length
     ? top5.map(w =>
         `<div class="srow" style="cursor:pointer" onclick="openDetail('${w.id}')">
-          <span style="font-size:12px;flex:1">${escH(w.naam)}</span>
-          <span style="font-size:11px;color:var(--muted)">${w.land || ''}</span>
+          <span style="font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(w.naam)}</span>
+          <span style="font-size:11px;color:var(--muted);flex-shrink:0;margin-left:6px">${w.land || ''}</span>
         </div>`
       ).join('')
-    : '<div style="color:var(--muted);font-size:12px;padding:6px 0">Nog geen 5-sterren wijnen</div>';
+    : '<div style="color:var(--muted);font-size:13px;padding:6px 0">Nog geen 5-sterren wijnen</div>';
+
+  // ── Top winkels ──────────────────────────────────────────────
+  document.getElementById('s-winkels').innerHTML = bar(count('winkel'), 10);
 }
 
 
