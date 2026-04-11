@@ -424,21 +424,24 @@ body {
 /* Kaartje inhoud */
 .wbody  { flex: 1; min-width: 0; }
 
-.wrow1  { display: flex; align-items: baseline; gap: 6px; }
-.wname  { font-size: 15px; font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wrow1  { display: flex; align-items: baseline; margin-bottom: 3px; }
+.wname  { font-size: 14px; font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Soort badge */
-.wsoort { font-size: 10px; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; font-weight: 500; }
+.wsoort { font-size: 11px; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; font-weight: 500; }
 .sr  { background: #fce8e6; color: #d93025; }
 .sw  { background: #e8f0fe; color: #1a73e8; }
 .sro { background: #fce4ec; color: #e52592; }
 
-.wrow2 { display: flex; align-items: center; gap: 8px; margin-top: 3px; font-size: 13px; color: var(--muted); }
-.wrow2 .wp { margin-left: auto; flex-shrink: 0; }
+/* Regel 2: meta links, sterren+badge+prijs rechts */
+.wrow2       { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.wmeta       { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; min-width: 0; }
+.wrow2-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.wp          { font-size: 12px; color: var(--muted); }
 
-/* Sterren */
-.wstars      { font-size: 12px; color: #fbbc04; letter-spacing: -.5px; flex-shrink: 0; }
-.wstars.none { color: var(--border); }
+/* Sterren — groter en goed zichtbaar */
+.wstars      { font-size: 17px; color: #fbbc04; letter-spacing: 1px; line-height: 1; }
+.wstars.none { color: #dadce0; font-size: 14px; letter-spacing: 1px; }
 
 /* Leeg resultaat */
 .empty { text-align: center; padding: 50px 20px; color: var(--muted); font-size: 14px; }
