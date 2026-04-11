@@ -35,10 +35,26 @@ let tokenClient  = null;        // Herbruikbare token client
  */
 function handleCredentialResponse(response) {
   const payload = JSON.parse(atob(response.credential.split('.')[1]));
-  document.getElementById('userName').textContent = payload.given_name || payload.email;
+  const naam = payload.given_name || payload.email;
+
+  // Sla naam en sub (unieke Google ID) op — zodat we bij heropen weten wie ingelogd was
+  localStorage.setItem('mijnwijn_user', JSON.stringify({
+    naam,
+    sub: payload.sub,
+    email: payload.email,
+  }));
+
+  showApp(naam);
+  requestDriveToken();
+}
+
+/**
+ * Toon de app met de naam van de ingelogde gebruiker.
+ */
+function showApp(naam) {
+  document.getElementById('userName').textContent = naam;
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = '';
-  requestDriveToken();
 }
 
 /**
@@ -77,7 +93,6 @@ async function getValidToken() {
   // Token verlopen — stil vernieuwen (geen popup)
   return new Promise((resolve) => {
     if (!tokenClient) { resolve(null); return; }
-    const origCallback = tokenClient.callback;
     tokenClient.callback = (tokenResponse) => {
       if (tokenResponse.error) { resolve(null); return; }
       accessToken = tokenResponse.access_token;
@@ -97,29 +112,65 @@ function initApp() {
 }
 
 /**
- * Uitloggen: pagina herladen.
+ * Uitloggen: sessie wissen en pagina herladen.
  */
 function signOut() {
+  localStorage.removeItem('mijnwijn_user');
   google.accounts.id.disableAutoSelect();
   location.reload();
 }
 
 /**
- * Initialiseer de Google Sign-In knop zodra de pagina geladen is.
- * Probeer ook automatisch in te loggen als de gebruiker al eerder inlogde.
+ * Initialiseer Google Sign-In en probeer automatisch in te loggen.
+ * Als de gebruiker al eerder inlogde: toon de app direct en haal
+ * stil een nieuw Drive-token op — geen loginscherm nodig.
  */
 window.addEventListener('load', () => {
+  // Controleer of we een eerdere sessie kennen
+  const savedUser = localStorage.getItem('mijnwijn_user');
+
   google.accounts.id.initialize({
     client_id:   CONFIG.CLIENT_ID,
     callback:    handleCredentialResponse,
-    auto_select: true,  // Automatisch inloggen als sessie nog actief is
+    auto_select: true,
   });
-  google.accounts.id.renderButton(
-    document.getElementById('googleSignInBtn'),
-    { theme: 'filled_black', size: 'large', text: 'signin_with_google', locale: 'nl' }
-  );
-  // Probeer One Tap automatisch te tonen
-  google.accounts.id.prompt();
+
+  if (savedUser) {
+    // Bekende gebruiker: toon app direct, haal token stil op
+    const { naam } = JSON.parse(savedUser);
+    showApp(naam);
+    // Stil een token ophalen — geen loginscherm, geen popup
+    if (!tokenClient) {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CONFIG.CLIENT_ID,
+        scope:     CONFIG.DRIVE_SCOPE,
+        callback:  (tokenResponse) => {
+          if (tokenResponse.error) {
+            // Toch geen toegang — val terug naar loginscherm
+            localStorage.removeItem('mijnwijn_user');
+            document.getElementById('loginScreen').style.display = '';
+            document.getElementById('app').style.display = 'none';
+            google.accounts.id.renderButton(
+              document.getElementById('googleSignInBtn'),
+              { theme: 'filled_black', size: 'large', text: 'signin_with_google', locale: 'nl' }
+            );
+            return;
+          }
+          accessToken = tokenResponse.access_token;
+          tokenExpiry = Date.now() + 55 * 60 * 1000;
+          initApp();
+        },
+      });
+    }
+    tokenClient.requestAccessToken({ prompt: '' });
+  } else {
+    // Nieuwe of uitgelogde gebruiker: toon loginscherm
+    google.accounts.id.renderButton(
+      document.getElementById('googleSignInBtn'),
+      { theme: 'filled_black', size: 'large', text: 'signin_with_google', locale: 'nl' }
+    );
+    google.accounts.id.prompt();
+  }
 });
 
 
