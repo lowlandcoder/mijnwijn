@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>MijnWijn</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 
   <!-- Google Identity Services -->
@@ -93,10 +93,10 @@
           <input type="search" id="searchInput" placeholder="Naam, producent, druif…" oninput="renderList()">
         </div>
         <select class="sort-sel" id="sortSel" onchange="renderList()">
-          <option value="datum_desc">Datum ↓</option>
-          <option value="datum_asc">Datum ↑</option>
           <option value="score_desc">Score ↓</option>
           <option value="score_asc">Score ↑</option>
+          <option value="datum_desc">Datum ↓</option>
+          <option value="datum_asc">Datum ↑</option>
           <option value="naam">Naam A→Z</option>
         </select>
       </div>
