@@ -344,12 +344,14 @@ function renderList() {
   <div class="wbody">
     <div class="wrow1">
       <div class="wname">${escH(w.naam)}</div>
-      <span class="wsoort ${tagC}">${soortL}</span>
     </div>
     <div class="wrow2">
-      <span>${meta}</span>
-      <span class="${starsC}">${stars}</span>
-      ${prijs ? `<span class="wp">${prijs}</span>` : ''}
+      <span class="wmeta">${meta}</span>
+      <div class="wrow2-right">
+        <span class="${starsC}">${stars}</span>
+        <span class="wsoort ${tagC}">${soortL}</span>
+        ${prijs ? `<span class="wp">${prijs}</span>` : ''}
+      </div>
     </div>
   </div>
 </div>`;
