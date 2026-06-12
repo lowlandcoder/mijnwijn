@@ -2,7 +2,7 @@
   "name": "MijnWijn",
   "short_name": "MijnWijn",
   "description": "Overzicht van mijn favoriete wijnen",
-  "start_url": "/mijnwijn/",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1a73e8",
